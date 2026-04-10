@@ -149,3 +149,34 @@ This unified platform combines code from:
 - Cards: always use consistent padding (p-6), border-radius (rounded-xl)
 - Forms: max-width 480px unless explicitly a wide layout
 - Tables: always implement horizontal scroll on mobile
+
+## Troubleshooting Learnings (April 2026)
+
+### Tailwind Spacing Classes Not Applied
+
+**Problem:** Tailwind spacing utilities (`mb-8`, `gap-12`, `py-24`, etc.) were not being applied to components even though:
+- TypeScript compilation succeeded
+- Dev server was running
+- File changes were being detected (extreme visual indicators like red borders worked)
+
+**Root Cause:** Unknown - possibly Tailwind v4 + Vite integration issue where certain classes get tree-shaken or not processed correctly in development mode.
+
+**Solution:** Use inline styles for spacing when Tailwind classes fail:
+```tsx
+// Instead of:
+<div className="mb-24">
+
+// Use:
+<div style={{ marginBottom: '96px' }}>
+```
+
+**Verification Method:**
+1. Add extreme visual indicators (red border, blue background) to verify code changes are being served
+2. If indicators appear but Tailwind classes don't → use inline styles
+3. Check browser DevTools computed styles to confirm what's actually applied
+
+**Lesson:** When spacing/layout changes don't appear despite correct code:
+- Don't assume the code is wrong
+- Verify the file is actually being served (extreme test styles)
+- Fall back to inline styles for reliable spacing
+- This project's Tailwind v4 setup has quirks with spacing utilities in dev mode
