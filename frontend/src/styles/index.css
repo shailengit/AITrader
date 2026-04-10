@@ -1,0 +1,344 @@
+@import "tailwindcss";
+
+/* ========================================
+   Tailwind v4 Theme Configuration
+   ======================================== */
+
+@theme {
+  /* Colors - Apple System */
+  --color-canvas-dark: #000000;
+  --color-canvas-light: #f5f5f7;
+  --color-surface-dark: #272729;
+  --color-surface-dark-alt: #262628;
+  --color-surface-dark-elevated: #28282a;
+  --color-surface-dark-highest: #2a2a2d;
+  --color-surface-dark-deepest: #242426;
+
+  --color-foreground-dark: #ffffff;
+  --color-foreground-light: #1d1d1f;
+  --color-muted-light: rgba(0, 0, 0, 0.8);
+  --color-subtle-light: rgba(0, 0, 0, 0.48);
+  --color-disabled-light: rgba(0, 0, 0, 0.48);
+
+  --color-apple-blue: #0071e3;
+  --color-link-blue-light: #0066cc;
+  --color-link-blue-dark: #2997ff;
+
+  /* Typography */
+  --font-sf-pro: 'SF Pro Display', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  --font-sf-text: 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+
+  /* Spacing & Radius */
+  --radius-apple-micro: 5px;
+  --radius-apple-std: 8px;
+  --radius-apple-comfort: 11px;
+  --radius-apple-large: 12px;
+  --radius-apple-pill: 980px;
+
+  /* Shadows */
+  --shadow-apple-card: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+}
+
+:root {
+  --canvas: #000000;
+  --surface: #272729;
+  --surface-raised: #28282a;
+  --surface-overlay: #2a2a2d;
+
+  --foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.8);
+  --subtle: rgba(255, 255, 255, 0.48);
+  --disabled: rgba(255, 255, 255, 0.48);
+
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.2);
+
+  --accent: #0071e3;
+  --accent-light: #2997ff;
+  --accent-dark: #0066cc;
+  --accent-glow: rgba(0, 113, 227, 0.15);
+}
+
+.apple-light-theme {
+  --canvas: #f5f5f7;
+  --surface: #ffffff;
+  --surface-raised: #fafafc;
+  --surface-overlay: #ededf2;
+
+  --foreground: #1d1d1f;
+  --muted: rgba(0, 0, 0, 0.8);
+  --subtle: rgba(0, 0, 0, 0.48);
+  --disabled: rgba(0, 0, 0, 0.48);
+
+  --border: rgba(0, 0, 0, 0.04);
+  --border-hover: rgba(0, 0, 0, 0.1);
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sf-text), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--canvas);
+  color: var(--foreground);
+  line-height: 1.47;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Typography - Apple Design System */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Display typography (20px+) */
+.display-hero {
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1.07;
+  letter-spacing: -0.28px;
+}
+
+.display-section {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: normal;
+}
+
+.display-tile {
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: 0.196px;
+}
+
+.display-card {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.19;
+  letter-spacing: 0.231px;
+}
+
+/* Body typography (below 20px) */
+.body-large {
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.19;
+  letter-spacing: 0.231px;
+}
+
+.body {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.47;
+  letter-spacing: -0.374px;
+}
+
+.body-emphasis {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.24;
+  letter-spacing: -0.374px;
+}
+
+.caption {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.29;
+  letter-spacing: -0.224px;
+}
+
+.caption-bold {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.29;
+  letter-spacing: -0.224px;
+}
+
+.micro {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.33;
+  letter-spacing: -0.12px;
+}
+
+.micro-bold {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.33;
+  letter-spacing: -0.12px;
+}
+
+.nano {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.47;
+  letter-spacing: -0.08px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--canvas);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* Selection */
+::selection {
+  background-color: rgba(16, 185, 129, 0.3);
+  color: var(--foreground);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Code font */
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Tabular numbers for metrics */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Transitions */
+button, a, input, textarea, select {
+  transition: all 0.15s ease;
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+/* Glow effects */
+.glow-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-emerald {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+}
+
+.bg-gradient-blue {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.02) 100%);
+}
+
+.bg-gradient-purple {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.02) 100%);
+}
+
+/* Card hover effects */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Pulse animation for active states */
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
+}
+
+/* ========================================
+   Entrance Animations
+   ======================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Stagger delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Keyframe animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.25; }
+}
