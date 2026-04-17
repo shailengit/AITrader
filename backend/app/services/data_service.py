@@ -111,7 +111,7 @@ class DataService:
             # Sort by date
             df.sort_index(inplace=True)
 
-            logger.info(f"Fetched {len(df)} rows for {ticker} from {df.index[0]} to {df.index[-1]}")
+            logger.debug(f"Fetched {len(df)} rows for {ticker} from {df.index[0]} to {df.index[-1]}")
             return df
 
         except Exception as e:
