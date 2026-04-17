@@ -99,7 +99,7 @@ class DataService:
                 df = pd.read_sql(query, conn, params=params)
 
             if df.empty:
-                logger.debug(f"No data found for ticker {ticker}")
+                logger.warning(f"No data found for ticker {ticker}")
                 return None
 
             # Ensure Date column is datetime
@@ -111,7 +111,7 @@ class DataService:
             # Sort by date
             df.sort_index(inplace=True)
 
-            logger.debug(f"Fetched {len(df)} rows for {ticker} from {df.index[0]} to {df.index[-1]}")
+            logger.info(f"Fetched {len(df)} rows for {ticker} from {df.index[0]} to {df.index[-1]}")
             return df
 
         except Exception as e:
