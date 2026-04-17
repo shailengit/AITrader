@@ -80,7 +80,7 @@ export default function Builder() {
   const [strategies, setStrategies] = useState<string[]>([]);
 
   // Run mode
-  const [runMode, setRunMode] = useState<'backtest' | 'optimize' | 'true_wfo'>('backtest');
+  const [runMode, setRunMode] = useState<'backtest' | 'optimize'>('backtest');
   const [optConfig, setOptConfig] = useState<OptimizationConfigData>(defaultOptConfig);
   const [optParams, setOptParams] = useState<ParamRange[]>([]);
 
@@ -291,19 +291,6 @@ export default function Builder() {
           }
         });
         body = { code, strategy_params, config: optConfig };
-      } else if (runMode === 'true_wfo') {
-        endpoint = `${API_URL}/true-wfo`;
-        const strategy_params: Record<string, { start: number; stop: number; step: number }> = {};
-        optParams.forEach((p) => {
-          if (p.name) {
-            strategy_params[p.name] = {
-              start: p.start,
-              stop: p.stop,
-              step: p.step,
-            };
-          }
-        });
-        body = { code, strategy_params, config: optConfig };
       }
 
       const res = await fetch(endpoint, {
@@ -333,25 +320,26 @@ export default function Builder() {
       }
 
       if (data.data?.stats || data.data?.best_equity || data.data?.equity || data.data?.windows) {
-        // For True WFO, truncate large arrays to avoid localStorage quota errors
-        const maxEquityPoints = 100;
-        const maxTrades = 100;
+        // Truncate large arrays to avoid localStorage quota errors
+        const maxEquityPoints = 1000;
+        const maxTrades = 500;
 
         let equity = data.data.equity || [];
         let bestEquity = data.data.best_equity || [];
         let trades = data.data.trades || [];
 
-        // Truncate if needed (True WFO produces massive data)
-        if (runMode === 'true_wfo' && equity.length > maxEquityPoints) {
+        // Truncate if needed
+        if (equity.length > maxEquityPoints) {
           equity = equity.slice(0, maxEquityPoints);
         }
-        if (runMode === 'true_wfo' && bestEquity.length > maxEquityPoints) {
+        if (bestEquity.length > maxEquityPoints) {
           bestEquity = bestEquity.slice(0, maxEquityPoints);
         }
-        if (runMode === 'true_wfo' && trades.length > maxTrades) {
+        if (trades.length > maxTrades) {
           trades = trades.slice(0, maxTrades);
         }
 
+        // Always create optimization object for optimization runs
         const runData = {
           stats: data.data.stats,
           equity: equity,
@@ -360,22 +348,21 @@ export default function Builder() {
           benchmark_drawdown: data.data.benchmark_drawdown,
           trades: trades,
           indicators: data.data.indicators || [],
-          optimization:
-            runMode === 'optimize'
-              ? {
-                  mode: data.data.mode,
-                  heatmap: data.data.heatmap?.slice(0, 50),
-                  windows: data.data.windows,
-                  best_equity: bestEquity,
-                  oos_equity: data.data.oos_equity,
-                  benchmark_equity: data.data.benchmark_equity,
-                  stats: data.data.stats,
-                  equity: equity,
-                  ohlcv: data.data.ohlcv,
-                  indicators: data.data.indicators || [],
-                  trades: trades,
-                }
-              : null,
+          optimization: runMode === 'optimize'
+            ? {
+                mode: data.data.mode,
+                heatmap: data.data.heatmap?.slice(0, 50),
+                windows: data.data.windows,
+                best_equity: bestEquity,
+                oos_equity: data.data.oos_equity,
+                benchmark_equity: data.data.benchmark_equity,
+                stats: data.data.stats,
+                equity: equity,
+                ohlcv: data.data.ohlcv,
+                indicators: data.data.indicators || [],
+                trades: trades,
+              }
+            : null,
           output: data.data.output,
         };
         try {
@@ -620,7 +607,7 @@ export default function Builder() {
           </div>
 
           {/* Optimization Config */}
-          {(runMode === 'optimize' || runMode === 'true_wfo') && (
+          {runMode === 'optimize' && (
             <div
               className="rounded-xl overflow-hidden shadow-sm"
               style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
@@ -753,17 +740,6 @@ export default function Builder() {
               Backtest
             </button>
             <button
-              onClick={() => setRunMode('true_wfo')}
-              className={`flex-1 text-xs py-2 rounded font-medium transition-all`}
-              style={{
-                backgroundColor: runMode === 'true_wfo' ? '#F59E0B' : 'transparent',
-                color: runMode === 'true_wfo' ? '#ffffff' : colors.muted,
-                boxShadow: runMode === 'true_wfo' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-              }}
-            >
-              True WFO
-            </button>
-            <button
               onClick={() => setRunMode('optimize')}
               className={`flex-1 text-xs py-2 rounded font-medium transition-all`}
               style={{
@@ -797,14 +773,12 @@ export default function Builder() {
           >
             {isRunning ? (
               <Activity className="animate-spin" size={16} />
-            ) : runMode === 'true_wfo' ? (
-              <Microscope size={16} />
             ) : runMode === 'optimize' ? (
               <Microscope size={16} />
             ) : (
               <Play size={16} />
             )}
-            {runMode === 'true_wfo' ? 'Run True WFO' : runMode === 'optimize' ? 'Run Optimization' : 'Run Backtest'}
+            {runMode === 'optimize' ? 'Run Optimization' : 'Run Backtest'}
           </button>
 
           {/* Save Buttons */}

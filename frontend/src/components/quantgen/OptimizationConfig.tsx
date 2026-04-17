@@ -102,11 +102,11 @@ export default function OptimizationConfig({
               >
                 <option value="simple">Simple (Grid Search)</option>
                 <option value="wfo">Walk-Forward (Historical)</option>
-                <option value="true_wfo">Walk-Forward (True OOS)</option>
+                <option value="true_wfo">True Walk-Forward</option>
               </select>
               {config.mode === 'true_wfo' && (
                 <p className="text-xs mt-1.5" style={{ color: '#10b981' }}>
-                  True Walk-Forward: Maintains positions and P&L across windows (realistic trading).
+                  True Walk-Forward: Optimizes on training window, trades single next day, maintains positions across windows.
                 </p>
               )}
               {(config.mode === 'wfo' || config.mode === 'true_wfo') &&

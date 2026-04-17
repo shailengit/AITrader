@@ -31,7 +31,6 @@ from app.services.validators import (
     StrategyValidator
 )
 from app.services.vbt_helpers import get_indicator_list
-from app.services.continuous_wfo import run_continuous_true_wfo
 
 logger = logging.getLogger(__name__)
 
@@ -352,7 +351,10 @@ async def optimize_strategy_endpoint(request: OptimizeRequest):
 @router.post("/true-wfo")
 async def run_true_wfo(request: TrueWFORequest):
     """
-    Run True Walk-Forward Optimization.
+    DEPRECATED: Use /optimize endpoint with mode='true_wfo' instead.
+
+    This endpoint is maintained for backward compatibility but routes
+    to the same code as /optimize with mode='true_wfo'.
 
     For each rolling window:
     1. Optimize parameters on training data
@@ -360,110 +362,17 @@ async def run_true_wfo(request: TrueWFORequest):
     3. Trade only on that next day (first day of test window)
     4. Maintain portfolio state across windows
     """
-    try:
-        logger.info(f"Starting True WFO with params: {request.strategy_params}")
+    logger.warning("DEPRECATED: /true-wfo endpoint is deprecated. Use /optimize with mode='true_wfo' instead.")
 
-        # Validate input
-        try:
-            validated = validate_api_request('true-wfo', {
-                'code': request.code,
-                'strategy_params': request.strategy_params,
-                'config': request.config
-            })
-        except BaseValidationError as e:
-            return {
-                "success": False,
-                "error": {
-                    "type": "ValidationError",
-                    "message": e.message,
-                    "field": e.field
-                },
-                "data": None
-            }
+    # Convert TrueWFORequest to OptimizeRequest format and call optimize endpoint
+    opt_request = OptimizeRequest(
+        code=request.code,
+        strategy_params=request.strategy_params,
+        config={**request.config, "mode": "true_wfo"}
+    )
 
-        # Import DataService for code execution
-        from app.services.data_service import DataService
-        import io
-
-        # Create result dict with output buffer
-        output_buffer = io.StringIO()
-        result = {
-            'output': '',
-            'stats': {},
-            'equity': [],
-            'oos_equity': [],
-            'trades': [],
-            'windows': []
-        }
-
-        # Get parameter names and combinations from strategy_params
-        strategy_params = validated.strategy_params
-        param_names = list(strategy_params.keys())
-
-        # Build combinations - handle both dict ranges and list values
-        param_values_list = []
-        for name in param_names:
-            param_val = strategy_params[name]
-            if isinstance(param_val, dict) and "start" in param_val:
-                # Range format: {start, stop, step}
-                start = float(param_val["start"])
-                stop = float(param_val["stop"])
-                step = float(param_val["step"])
-                vals = np.arange(start, stop + step/1000, step).tolist()
-                # Round for cleaner display
-                vals = [round(x, 4) if isinstance(x, float) else x for x in vals]
-                if int(step) == step and int(start) == start:
-                    vals = [int(x) for x in vals]
-            else:
-                # Direct list format
-                vals = param_val if isinstance(param_val, list) else [param_val]
-            param_values_list.append(vals)
-
-        # Generate Cartesian Product
-        combinations = list(itertools.product(*param_values_list))
-
-        # Run True WFO
-        result = run_continuous_true_wfo(
-            validated.code,                    # Original code
-            validated.code,                    # Modified code (same for WFO)
-            strategy_params,
-            validated.config,
-            param_names,
-            combinations,
-            'sharpe',                          # Default metric
-            result,
-            output_buffer
-        )
-
-        # Check if there was an error in output
-        if "ERROR:" in result.get("output", ""):
-            logger.error(f"True WFO failed: {result.get('output', '')}")
-            return {
-                "success": False,
-                "error": {
-                    "type": "TrueWFOError",
-                    "message": "True WFO failed",
-                    "details": result.get("output", "")
-                },
-                "data": result
-            }
-
-        logger.info("True WFO completed successfully")
-        return {
-            "success": True,
-            "data": result,
-            "message": "True WFO completed successfully"
-        }
-
-    except Exception as e:
-        import traceback
-        logger.error(f"True WFO failed: {e}")
-        logger.error(traceback.format_exc())
-        return {
-            "success": False,
-            "error": str(e),
-            "details": traceback.format_exc()
-        }
+    # Route to optimize endpoint
+    return await optimize_strategy_endpoint(opt_request)
 
 
 @router.post("/chat")
