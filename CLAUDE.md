@@ -180,3 +180,30 @@ This unified platform combines code from:
 - Verify the file is actually being served (extreme test styles)
 - Fall back to inline styles for reliable spacing
 - This project's Tailwind v4 setup has quirks with spacing utilities in dev mode
+
+### VectorBT Optimization Requires Special Comparison Syntax
+
+**Problem:** Strategy backtest works fine, but optimization fails with "cannot join with no overlapping index names" error.
+
+**Root Cause:** When using single parameter values, VBT creates simple Series that can be compared with operators (`>`, `<`, `&`). When optimizing with multiple parameter combinations, VBT creates DataFrames with MultiIndex columns that cannot be directly compared with operators.
+
+**Solution:** Use VBT's built-in comparison methods instead of operators:
+
+```python
+# WRONG - Works for backtest, fails for optimization:
+entries = (fast_ma.ma > slow_ma.ma) & (rsi.rsi < 30)
+
+# CORRECT - Works for both backtest and optimization:
+entries = vbt.And(fast_ma.ma_above(slow_ma.ma), rsi.rsi_below(30))
+
+# Available VBT comparison methods:
+# - ma_above(), ma_below(), ma_crossed_above(), ma_crossed_below()
+# - rsi_above(), rsi_below(), rsi_crossed_above(), rsi_crossed_below()
+# - vbt.And(), vbt.Or(), vbt.Not() for combining conditions
+```
+
+**Lesson:** 
+- Strategy code must use VBT comparison methods to work with optimization
+- Single-parameter backtests work with operators because VBT uses simple Series
+- Multi-parameter optimization requires DataFrame-aware comparison methods
+- The backend now catches this error and provides a helpful message explaining how to fix the code

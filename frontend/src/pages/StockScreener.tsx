@@ -17,6 +17,7 @@ import {
   Cpu,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "../context/ThemeContext";
 
 interface ScanResult {
   ticker: string;
@@ -51,6 +52,7 @@ interface ScreenerMode {
 }
 
 export default function StockScreener() {
+  const { isDarkMode } = useTheme();
   const [modes, setModes] = useState<ScreenerMode[]>([]);
   const [selectedMode, setSelectedMode] = useState<string>("dormant_giant");
   const [useAi, setUseAi] = useState(true);
@@ -68,6 +70,19 @@ export default function StockScreener() {
     accumulation_threshold: 0.005,
     volume_threshold: 1.5,
   });
+
+  // Theme-aware colors
+  const colors = {
+    text: isDarkMode ? '#FAFAFA' : '#1d1d1f',
+    muted: isDarkMode ? '#A1A1AA' : '#6e6e73',
+    subtle: isDarkMode ? '#52525B' : '#86868b',
+    surface: isDarkMode ? '#27272A' : '#ffffff',
+    surfaceAlt: isDarkMode ? '#27272A' : '#f5f5f7',
+    border: isDarkMode ? '#3F3F46' : '#d2d2d7',
+    borderLight: isDarkMode ? '#27272A' : '#e5e5e7',
+    inputBg: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : '#ffffff',
+    canvas: isDarkMode ? '#000000' : '#f5f5f7',
+  };
 
   useEffect(() => {
     fetch("/api/screener/modes")
@@ -154,32 +169,32 @@ export default function StockScreener() {
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col">
-      {/* Background Effects - Floating Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {/* Top gradient */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(16, 185, 129, 0.03), transparent, transparent)'
-          }}
-        />
-        {/* Floating orbs */}
-        <div
-          className="absolute top-20 left-1/4 w-64 h-64 rounded-full blur-[100px] opacity-20 animate-float"
-          style={{ background: 'rgba(16, 185, 129, 0.15)' }}
-        />
-        <div
-          className="absolute top-40 right-1/4 w-48 h-48 rounded-full blur-[100px] opacity-15 animate-float"
-          style={{
-            background: 'rgba(59, 130, 246, 0.1)',
-            animationDelay: '2s'
-          }}
-        />
-        <div
-          className="absolute top-60 right-1/3 w-32 h-32 rounded-full blur-[80px] opacity-10"
-          style={{ background: 'rgba(16, 185, 129, 0.1)' }}
-        />
-      </div>
+      {/* Background Effects - Only in dark mode */}
+      {isDarkMode && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(16, 185, 129, 0.03), transparent, transparent)'
+            }}
+          />
+          <div
+            className="absolute top-20 left-1/4 w-64 h-64 rounded-full blur-[100px] opacity-20 animate-float"
+            style={{ background: 'rgba(16, 185, 129, 0.15)' }}
+          />
+          <div
+            className="absolute top-40 right-1/4 w-48 h-48 rounded-full blur-[100px] opacity-15 animate-float"
+            style={{
+              background: 'rgba(59, 130, 246, 0.1)',
+              animationDelay: '2s'
+            }}
+          />
+          <div
+            className="absolute top-60 right-1/3 w-32 h-32 rounded-full blur-[80px] opacity-10"
+            style={{ background: 'rgba(16, 185, 129, 0.1)' }}
+          />
+        </div>
+      )}
 
       {/* Hero Section */}
       <div className="relative z-10 w-full flex justify-center pt-32 pb-16 px-8">
@@ -193,12 +208,12 @@ export default function StockScreener() {
             <div
               className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 border"
               style={{
-                background: 'rgba(16, 185, 129, 0.1)',
-                borderColor: 'rgba(16, 185, 129, 0.2)'
+                background: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
+                borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.3)'
               }}
             >
-              <Sparkles className="w-5 h-5 text-emerald-400" />
-              <span className="text-base text-emerald-400/80 font-medium">
+              <Sparkles className="w-5 h-5 text-emerald-500" />
+              <span className="text-base text-emerald-600 font-medium">
                 Multi-Agent Intelligence
               </span>
             </div>
@@ -207,7 +222,7 @@ export default function StockScreener() {
           <h1
             className="text-7xl font-bold mb-6 tracking-tight text-center"
             style={{
-              color: '#FAFAFA',
+              color: colors.text,
               letterSpacing: '-0.04em'
             }}
           >
@@ -216,7 +231,7 @@ export default function StockScreener() {
 
           <p
             className="text-2xl max-w-3xl mx-auto leading-relaxed text-center"
-            style={{ color: '#A1A1AA' }}
+            style={{ color: colors.muted }}
           >
             Advanced technical and fundamental analysis powered by intelligent
             agents
@@ -237,15 +252,15 @@ export default function StockScreener() {
             <div className="flex flex-col items-center text-center gap-4 mb-8">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{ background: 'rgba(16, 185, 129, 0.1)' }}
+                style={{ background: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)' }}
               >
                 <Play className="w-7 h-7 text-emerald-500" />
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-white text-center">
+                <h2 className="text-3xl font-bold text-center" style={{ color: colors.text }}>
                   Select Mode
                 </h2>
-                <p className="text-base text-zinc-500 mt-1 text-center">
+                <p className="text-base mt-1 text-center" style={{ color: colors.muted }}>
                   Choose your screening strategy
                 </p>
               </div>
@@ -262,34 +277,51 @@ export default function StockScreener() {
                     onClick={() => setSelectedMode(mode.id)}
                     className={`relative p-8 rounded-3xl text-center transition-all duration-300 border ${
                       isSelected
-                        ? "bg-surface border-emerald-500/50 shadow-glow"
-                        : "bg-surface/50 border-zinc-800 hover:bg-surface hover:border-zinc-700"
+                        ? isDarkMode
+                          ? "border-emerald-500/50 shadow-glow"
+                          : "border-emerald-500 shadow-lg"
+                        : isDarkMode
+                          ? "hover:border-zinc-700"
+                          : "hover:border-zinc-300"
                     }`}
+                    style={{
+                      backgroundColor: isSelected
+                        ? isDarkMode ? colors.surface : '#ffffff'
+                        : isDarkMode ? 'rgba(39, 39, 42, 0.5)' : '#f5f5f7',
+                      borderColor: isSelected
+                        ? 'rgba(16, 185, 129, 0.5)'
+                        : isDarkMode ? '#3F3F46' : '#d2d2d7'
+                    }}
                   >
                     <div className="flex flex-col items-center gap-6">
                       <div
-                        className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${
-                          isSelected ? "bg-emerald-500/10" : "bg-zinc-800/50"
-                        }`}
+                        className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0`}
+                        style={{
+                          backgroundColor: isSelected
+                            ? isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)'
+                            : isDarkMode ? 'rgba(63, 63, 70, 0.5)' : '#e5e5e7'
+                        }}
                       >
                         <Icon
-                          className={`w-8 h-8 ${isSelected ? "text-emerald-500" : "text-zinc-500"}`}
+                          className={`w-8 h-8 ${isSelected ? "text-emerald-500" : isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}
                         />
                       </div>
 
                       <div className="w-full">
                         <div className="flex items-center justify-center gap-2 mb-2">
-                          <h3 className={`text-2xl font-bold text-center ${isSelected ? "text-white" : "text-zinc-300"}`}>
+                          <h3 className={`text-2xl font-bold text-center ${isSelected ? "" : isDarkMode ? "text-zinc-300" : "text-zinc-600"}`}
+                            style={{ color: isSelected ? colors.text : undefined }}
+                          >
                             {mode.name}
                           </h3>
                           {isSelected && (
                             <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
-                              <div className="w-2.5 h-2.5 rounded-full bg-black" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-white" />
                             </div>
                           )}
                         </div>
 
-                        <p className="text-base text-zinc-400 leading-relaxed mb-4 text-center">
+                        <p className="text-base leading-relaxed mb-4 text-center" style={{ color: colors.muted }}>
                           {mode.description}
                         </p>
 
@@ -297,11 +329,14 @@ export default function StockScreener() {
                           {mode.agents.slice(0, 4).map((agent) => (
                             <span
                               key={agent}
-                              className={`text-sm px-3 py-1.5 rounded-full font-medium ${
-                                isSelected
-                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                  : "bg-zinc-800 text-zinc-500 border border-zinc-700"
-                              }`}
+                              className={`text-sm px-3 py-1.5 rounded-full font-medium`}
+                              style={{
+                                backgroundColor: isSelected
+                                  ? isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)'
+                                  : isDarkMode ? '#27272A' : '#e5e5e7',
+                                color: isSelected ? '#10B981' : isDarkMode ? '#A1A1AA' : '#6e6e73',
+                                border: isSelected ? `1px solid ${isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.3)'}` : 'none'
+                              }}
                             >
                               {agent}
                             </span>
@@ -322,23 +357,27 @@ export default function StockScreener() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="xl:col-span-2 bg-surface border border-zinc-800 rounded-3xl p-8"
+              className="xl:col-span-2 rounded-3xl p-8"
+              style={{
+                backgroundColor: colors.surface,
+                border: `1px solid ${colors.border}`
+              }}
             >
               <div className="flex flex-col items-center text-center mb-8">
                 <div className="flex items-center gap-4 mb-2">
                   <div
                     className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                    style={{ background: 'rgba(16, 185, 129, 0.1)' }}
+                    style={{ background: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)' }}
                   >
                     <Bot className="w-7 h-7 text-emerald-500" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white text-center">
+                    <h3 className="text-2xl font-bold text-center" style={{ color: colors.text }}>
                       AI Analysis
                     </h3>
                   </div>
                 </div>
-                <p className="text-base text-zinc-500 text-center">
+                <p className="text-base text-center" style={{ color: colors.muted }}>
                   Multi-agent interpretation for deeper insights
                 </p>
 
@@ -347,21 +386,28 @@ export default function StockScreener() {
                   role="switch"
                   aria-checked={useAi}
                   onClick={() => setUseAi(!useAi)}
-                  className={`relative w-16 h-9 rounded-full transition-colors ${
-                    useAi ? "bg-emerald-500" : "bg-zinc-700"
+                  className={`relative w-16 h-9 rounded-full transition-colors mt-4 ${
+                    useAi ? "bg-emerald-500" : isDarkMode ? "bg-zinc-700" : "bg-zinc-300"
                   }`}
                 >
                   <div
-                    className={`absolute top-1 w-7 h-7 rounded-full bg-black transition-transform ${
+                    className={`absolute top-1 w-7 h-7 rounded-full transition-transform ${
                       useAi ? "translate-x-8" : "translate-x-1"
                     }`}
+                    style={{ backgroundColor: isDarkMode ? '#000000' : '#ffffff' }}
                   />
                 </button>
               </div>
 
               {useAi && (
-                <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-                  <label className="block text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3 text-center">
+                <div
+                  className="rounded-2xl p-6"
+                  style={{
+                    backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : '#f5f5f7',
+                    border: `1px solid ${colors.border}`
+                  }}
+                >
+                  <label className="block text-sm font-semibold uppercase tracking-wide mb-3 text-center" style={{ color: colors.muted }}>
                     Custom Instructions
                   </label>
                   <textarea
@@ -372,18 +418,32 @@ export default function StockScreener() {
                         ? "Begin the daily Dormant Giant screening workflow..."
                         : "Find me 5 Small or Mid Cap stocks in an uptrend..."
                     }
-                    className="w-full h-32 bg-black/50 border border-zinc-800 rounded-xl p-4 text-lg text-white placeholder:text-zinc-600 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 outline-none resize-none"
+                    className="w-full h-32 border rounded-xl p-4 text-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 outline-none resize-none"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.text
+                    }}
                   />
                 </div>
               )}
 
               {scanStatus && scanStatus.status === "running" && (
-                <div className="mt-6 p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+                <div
+                  className="mt-6 p-6 rounded-2xl"
+                  style={{
+                    backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : '#f5f5f7',
+                    border: `1px solid ${colors.border}`
+                  }}
+                >
                   <div className="flex justify-between text-base mb-3">
-                    <span className="text-zinc-400">Analyzing stocks</span>
-                    <span className="font-bold text-white">{scanStatus.progress}%</span>
+                    <span style={{ color: colors.muted }}>Analyzing stocks</span>
+                    <span className="font-bold" style={{ color: colors.text }}>{scanStatus.progress}%</span>
                   </div>
-                  <div className="w-full h-3 bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className="w-full h-3 rounded-full overflow-hidden"
+                    style={{ backgroundColor: isDarkMode ? '#27272A' : '#e5e5e7' }}
+                  >
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${scanStatus.progress}%` }}
@@ -403,16 +463,25 @@ export default function StockScreener() {
               className="space-y-6"
             >
               {selectedMode === "dormant_giant" && (
-                <div className="bg-surface border border-zinc-800 rounded-3xl p-8">
+                <div
+                  className="rounded-3xl p-8"
+                  style={{
+                    backgroundColor: colors.surface,
+                    border: `1px solid ${colors.border}`
+                  }}
+                >
                   <div className="flex flex-col items-center text-center gap-4 mb-8">
-                    <div className="w-14 h-14 rounded-2xl bg-zinc-800/50 flex items-center justify-center">
-                      <SlidersHorizontal className="w-7 h-7 text-zinc-400" />
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                      style={{ backgroundColor: isDarkMode ? 'rgba(63, 63, 70, 0.5)' : '#e5e5e7' }}
+                    >
+                      <SlidersHorizontal className={`w-7 h-7 ${isDarkMode ? 'text-zinc-400' : 'text-zinc-500'}`} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white text-center">
+                      <h3 className="text-xl font-bold text-center" style={{ color: colors.text }}>
                         Sensitivity
                       </h3>
-                      <p className="text-sm text-zinc-500 text-center">
+                      <p className="text-sm text-center" style={{ color: colors.muted }}>
                         Adjust thresholds
                       </p>
                     </div>
@@ -444,10 +513,10 @@ export default function StockScreener() {
                     ].map((slider) => (
                       <div key={slider.key}>
                         <div className="flex justify-between items-center mb-3">
-                          <span className="text-base font-medium text-zinc-300 text-center">
+                          <span className="text-base font-medium text-center" style={{ color: colors.text }}>
                             {slider.label}
                           </span>
-                          <span className="text-base font-bold text-white">
+                          <span className="text-base font-bold" style={{ color: colors.text }}>
                             {filters[slider.key as keyof typeof filters]}
                           </span>
                         </div>
@@ -463,9 +532,16 @@ export default function StockScreener() {
                               [slider.key]: parseFloat(e.target.value),
                             })
                           }
-                          className="w-full h-2.5 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                          className="w-full h-2.5 rounded-full appearance-none cursor-pointer"
+                          style={{
+                            backgroundColor: isDarkMode ? '#27272A' : '#e5e5e7',
+                            accentColor: '#10B981'
+                          }}
                         />
-                        <div className="flex justify-between mt-2 text-xs text-zinc-600">
+                        <div
+                          className="flex justify-between mt-2 text-xs"
+                          style={{ color: colors.muted }}
+                        >
                           <span>{slider.min}</span>
                           <span>{slider.max}</span>
                         </div>
@@ -477,15 +553,26 @@ export default function StockScreener() {
 
               {selectedMode === "quant_strategy" &&
                 selectedModeInfo?.supports_backtesting && (
-                  <div className="bg-surface border border-zinc-800 rounded-3xl p-8">
-                    <label className="block text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">
+                  <div
+                    className="rounded-3xl p-8"
+                    style={{
+                      backgroundColor: colors.surface,
+                      border: `1px solid ${colors.border}`
+                    }}
+                  >
+                    <label className="block text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: colors.muted }}>
                       Backtest Cutoff Date
                     </label>
                     <input
                       type="date"
                       value={cutoffDate}
                       onChange={(e) => setCutoffDate(e.target.value)}
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-lg text-white focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 outline-none"
+                      className="w-full border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 outline-none"
+                      style={{
+                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : '#ffffff',
+                        borderColor: colors.border,
+                        color: colors.text
+                      }}
                     />
                   </div>
                 )}
@@ -495,8 +582,8 @@ export default function StockScreener() {
                 disabled={isScanning}
                 className={`w-full py-5 px-8 rounded-2xl text-lg font-bold transition-all flex items-center justify-center gap-3 ${
                   isScanning
-                    ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                    : "bg-emerald-500 text-black hover:bg-emerald-400 active:bg-emerald-600 shadow-glow hover:shadow-lg"
+                    ? isDarkMode ? "bg-zinc-800 text-zinc-500" : "bg-zinc-200 text-zinc-400"
+                    : "bg-emerald-500 text-white hover:bg-emerald-600"
                 }`}
               >
                 {isScanning ? (
@@ -524,14 +611,14 @@ export default function StockScreener() {
             >
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6"
-                style={{ background: 'rgba(39, 39, 42, 0.5)' }}
+                style={{ backgroundColor: isDarkMode ? 'rgba(39, 39, 42, 0.5)' : '#f5f5f7' }}
               >
-                <Search className="w-12 h-12 text-zinc-600" />
+                <Search className="w-12 h-12" style={{ color: isDarkMode ? '#52525B' : '#9ca3af' }} />
               </div>
-              <p className="text-2xl text-zinc-300 font-bold mb-2">
+              <p className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
                 Ready to scan
               </p>
-              <p className="text-lg text-zinc-500">
+              <p className="text-lg" style={{ color: colors.muted }}>
                 Configure settings and click Start to begin analysis
               </p>
             </motion.div>
@@ -541,7 +628,13 @@ export default function StockScreener() {
 
       {/* Results Section */}
       {(results.length > 0 || aiReport) && (
-        <div className="relative z-10 w-full flex justify-center bg-black/50 py-20 border-t border-zinc-800">
+        <div
+          className="relative z-10 w-full flex justify-center py-20 border-t"
+          style={{
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : '#f5f5f7',
+            borderColor: colors.border
+          }}
+        >
           <div style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: '0 32px' }}>
             {/* AI Report */}
             <AnimatePresence>
@@ -552,27 +645,34 @@ export default function StockScreener() {
                   exit={{ opacity: 0, y: -20 }}
                   className="mb-12"
                 >
-                  <div className="bg-surface border border-zinc-800 rounded-3xl p-8">
+                  <div
+                    className="rounded-3xl p-8"
+                    style={{
+                      backgroundColor: colors.surface,
+                      border: `1px solid ${colors.border}`
+                    }}
+                  >
                     <div className="flex flex-col items-center text-center mb-6">
                       <div className="flex items-center gap-4 mb-2">
                         <div
                           className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                          style={{ background: 'rgba(16, 185, 129, 0.1)' }}
+                          style={{ background: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)' }}
                         >
                           <Cpu className="w-7 h-7 text-emerald-500" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold text-white text-center">
+                          <h2 className="text-2xl font-bold text-center" style={{ color: colors.text }}>
                             AI Analysis Report
                           </h2>
                         </div>
                       </div>
-                      <p className="text-base text-zinc-500 text-center">
+                      <p className="text-base text-center" style={{ color: colors.muted }}>
                         Generated by multi-agent team
                       </p>
                       <button
                         onClick={() => setShowReport(!showReport)}
-                        className="flex items-center justify-center gap-2 text-base text-emerald-400 hover:text-emerald-300 px-4 py-2 mx-auto mt-4"
+                        className="flex items-center justify-center gap-2 text-base px-4 py-2 mx-auto mt-4 hover:text-emerald-600"
+                        style={{ color: isDarkMode ? '#34d399' : '#059669' }}
                       >
                         {showReport ? "Hide" : "Show"}
                         <ChevronDown
@@ -589,8 +689,17 @@ export default function StockScreener() {
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="bg-black/50 rounded-2xl p-6 border border-zinc-800">
-                            <pre className="whitespace-pre-wrap text-base text-zinc-300 font-mono leading-relaxed">
+                          <div
+                            className="rounded-2xl p-6 border"
+                            style={{
+                              backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : '#ffffff',
+                              borderColor: colors.border
+                            }}
+                          >
+                            <pre
+                              className="whitespace-pre-wrap text-base font-mono leading-relaxed"
+                              style={{ color: colors.muted }}
+                            >
                               {aiReport}
                             </pre>
                           </div>
@@ -607,10 +716,10 @@ export default function StockScreener() {
               {results.length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <div className="flex flex-col items-center text-center mb-8">
-                    <h2 className="text-3xl font-bold text-white text-center mb-4">
+                    <h2 className="text-3xl font-bold text-center mb-4" style={{ color: colors.text }}>
                       {results.length} stocks found
                     </h2>
-                    <div className="flex items-center gap-2 text-emerald-400">
+                    <div className="flex items-center gap-2" style={{ color: isDarkMode ? '#34d399' : '#059669' }}>
                       <CheckCircle2 className="w-6 h-6" />
                       <span className="text-base font-medium">
                         Analysis complete
@@ -625,24 +734,37 @@ export default function StockScreener() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="bg-surface border border-zinc-800 rounded-3xl p-6 hover:border-emerald-500/30 transition-colors text-center"
+                        className="rounded-3xl p-6 transition-colors text-center"
+                        style={{
+                          backgroundColor: colors.surface,
+                          border: `1px solid ${colors.border}`,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.5)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = colors.border;
+                        }}
                       >
                         <div className="flex flex-col items-center mb-4">
                           <div>
-                            <h3 className="text-2xl font-bold text-white text-center">
+                            <h3 className="text-2xl font-bold text-center" style={{ color: colors.text }}>
                               {result.ticker}
                             </h3>
                             {result.signal && (
-                              <span className="text-base text-emerald-400 text-center block">
+                              <span
+                                className="text-base text-center block"
+                                style={{ color: isDarkMode ? '#34d399' : '#059669' }}
+                              >
                                 {result.signal}
                               </span>
                             )}
                           </div>
-                          <TrendingUp className="w-6 h-6 text-zinc-600 mt-2" />
+                          <TrendingUp className="w-6 h-6 mt-2" style={{ color: colors.muted }} />
                         </div>
 
                         {result.close && (
-                          <p className="text-3xl font-bold text-white mb-4 text-center">
+                          <p className="text-3xl font-bold mb-4 text-center" style={{ color: colors.text }}>
                             ${result.close.toFixed(2)}
                           </p>
                         )}
@@ -651,11 +773,14 @@ export default function StockScreener() {
                           <div
                             className="mb-4 p-4 rounded-xl border"
                             style={{
-                              background: 'rgba(16, 185, 129, 0.05)',
-                              borderColor: 'rgba(16, 185, 129, 0.2)'
+                              background: isDarkMode ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.08)',
+                              borderColor: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.3)'
                             }}
                           >
-                            <p className="text-base text-emerald-400 text-center">
+                            <p
+                              className="text-base text-center"
+                              style={{ color: isDarkMode ? '#34d399' : '#059669' }}
+                            >
                               {result.fundamental_catalyst}
                             </p>
                           </div>
@@ -664,21 +789,21 @@ export default function StockScreener() {
                         {(result.sma_20 || result.rsi) && (
                           <div className="grid grid-cols-2 gap-4 text-base">
                             {result.sma_20 && (
-                              <div className="text-zinc-400 text-center">
-                                <span className="text-zinc-600 block text-sm mb-1 text-center">
+                              <div style={{ color: colors.muted }}>
+                                <span className="block text-sm mb-1 text-center" style={{ color: isDarkMode ? '#52525B' : '#9ca3af' }}>
                                   SMA(20)
                                 </span>
-                                <span className="text-white font-bold text-center block">
+                                <span className="font-bold text-center block" style={{ color: colors.text }}>
                                   {result.sma_20.toFixed(2)}
                                 </span>
                               </div>
                             )}
                             {result.rsi && (
-                              <div className="text-zinc-400 text-center">
-                                <span className="text-zinc-600 block text-sm mb-1 text-center">
+                              <div style={{ color: colors.muted }}>
+                                <span className="block text-sm mb-1 text-center" style={{ color: isDarkMode ? '#52525B' : '#9ca3af' }}>
                                   RSI
                                 </span>
-                                <span className="text-white font-bold text-center block">
+                                <span className="font-bold text-center block" style={{ color: colors.text }}>
                                   {result.rsi.toFixed(1)}
                                 </span>
                               </div>
@@ -686,7 +811,13 @@ export default function StockScreener() {
                           </div>
                         )}
 
-                        <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-center gap-2 text-sm text-zinc-500">
+                        <div
+                          className="mt-4 pt-4 flex items-center justify-center gap-2 text-sm"
+                          style={{
+                            color: colors.muted,
+                            borderTop: `1px solid ${colors.border}`
+                          }}
+                        >
                           <BarChart2 className="w-5 h-5" />
                           <span>Technical + Fundamental</span>
                         </div>

@@ -214,6 +214,53 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--border-hover);
 }
 
+/* ========================================
+   Semantic Theme Utility Classes
+   ======================================== */
+
+/* Background colors - use these instead of hardcoded values */
+.bg-canvas {
+  background-color: var(--canvas);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-surface-raised {
+  background-color: var(--surface-raised);
+}
+
+.bg-surface-overlay {
+  background-color: var(--surface-overlay);
+}
+
+/* Text colors */
+.text-foreground {
+  color: var(--foreground);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-subtle {
+  color: var(--subtle);
+}
+
+.text-disabled {
+  color: var(--disabled);
+}
+
+/* Border colors */
+.border-default {
+  border-color: var(--border);
+}
+
+.border-hover {
+  border-color: var(--border-hover);
+}
+
 /* Selection */
 ::selection {
   background-color: rgba(16, 185, 129, 0.3);

@@ -32,3 +32,6 @@ pydantic-settings>=2.0.0
 
 # Optional: Redis for caching (future use)
 # redis>=4.5.0
+
+# Resource monitoring
+psutil>=5.9.0

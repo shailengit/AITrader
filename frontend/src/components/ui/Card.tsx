@@ -1,5 +1,6 @@
 import { HTMLAttributes, forwardRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useTheme } from '../../context/ThemeContext'
 
 // Base Card
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -7,18 +8,24 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hover?: boolean
 }
 
-const cardVariants = {
-  base: 'bg-[#272729]',
-  raised: 'bg-[#2a2a2d]',
-  overlay: 'bg-[#28282a]',
-}
-
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ variant = 'base', hover = false, children, className = '', ...props }, ref) => {
+    const { isDarkMode } = useTheme()
+
+    // Theme-aware background colors
+    const bgColors = {
+      base: isDarkMode ? '#272729' : '#ffffff',
+      raised: isDarkMode ? '#2a2a2d' : '#fafafc',
+      overlay: isDarkMode ? '#28282a' : '#ededf2',
+    }
+
     return (
       <div
         ref={ref}
-        className={`rounded-xl ${cardVariants[variant]} ${hover ? 'hover:bg-surface-overlay transition-colors' : ''} ${className}`}
+        className={`rounded-xl ${hover ? 'transition-colors' : ''} ${className}`}
+        style={{
+          backgroundColor: bgColors[variant],
+        }}
         {...props}
       >
         {children}
@@ -34,19 +41,24 @@ interface DataCardProps extends HTMLAttributes<HTMLDivElement> {
   active?: boolean
 }
 
-const accentColors = {
-  apple: 'border-l-[#0071e3]',
-  white: 'border-l-white',
-  muted: 'border-l-[rgba(255,255,255,0.48)]',
-  red: 'border-l-[#ff3b30]',
-}
-
 export const DataCard = forwardRef<HTMLDivElement, DataCardProps>(
   ({ accentColor = 'apple', active = false, children, className = '', ...props }, ref) => {
+    const { isDarkMode } = useTheme()
+
+    const accentColors = {
+      apple: 'border-l-[#0071e3]',
+      white: isDarkMode ? 'border-l-white' : 'border-l-[#1d1d1f]',
+      muted: isDarkMode ? 'border-l-[rgba(255,255,255,0.48)]' : 'border-l-[rgba(0,0,0,0.48)]',
+      red: 'border-l-[#ff3b30]',
+    }
+
     return (
       <div
         ref={ref}
-        className={`bg-[#272729] rounded-lg p-6 border-l-4 ${accentColors[accentColor]} ${active ? 'shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]' : ''} ${className}`}
+        className={`rounded-lg p-6 border-l-4 ${accentColors[accentColor]} ${active ? 'shadow-[rgba(0,0,0,0.22)_3px_5px_30px_0px]' : ''} ${className}`}
+        style={{
+          backgroundColor: isDarkMode ? '#272729' : '#ffffff',
+        }}
         {...props}
       >
         {children}
@@ -67,20 +79,34 @@ interface StatCardProps extends HTMLAttributes<HTMLDivElement> {
 
 export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
   ({ label, value, change, changeType = 'neutral', suffix, className = '', ...props }, ref) => {
+    const { isDarkMode } = useTheme()
+
     const changeColors = {
-      positive: 'text-[#34c759]',
-      negative: 'text-[#ff3b30]',
-      neutral: 'text-white/48',
+      positive: isDarkMode ? 'text-[#34c759]' : 'text-[#248a3d]',
+      negative: isDarkMode ? 'text-[#ff3b30]' : 'text-[#dc2626]',
+      neutral: isDarkMode ? 'text-white/48' : 'text-[#6e6e73]',
     }
+
+    const textColor = isDarkMode ? '#ffffff' : '#1d1d1f'
+    const mutedColor = isDarkMode ? 'rgba(255,255,255,0.48)' : 'rgba(0,0,0,0.48)'
+    const bgColor = isDarkMode ? '#272729' : '#ffffff'
+    const hoverBg = isDarkMode ? '#2a2a2d' : '#fafafc'
 
     return (
       <div
         ref={ref}
-        className={`bg-[#272729] rounded-lg p-6 text-center hover:bg-[#2a2a2d] transition-colors ${className}`}
+        className={`rounded-lg p-6 text-center transition-colors ${className}`}
+        style={{
+          backgroundColor: bgColor,
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBg}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
         {...props}
       >
-        <p className="text-[28px] font-normal text-white mb-1 tabular-nums leading-[1.14] tracking-[0.196px]">{value}{suffix && <span className="text-[17px] text-white/48 ml-1">{suffix}</span>}</p>
-        <p className="text-[14px] text-white/48 mb-1 tracking-[-0.224px]">{label}</p>
+        <p className="text-[28px] font-normal mb-1 tabular-nums leading-[1.14] tracking-[0.196px]" style={{ color: textColor }}>
+          {value}{suffix && <span className="text-[17px] ml-1" style={{ color: mutedColor }}>{suffix}</span>}
+        </p>
+        <p className="text-[14px] mb-1 tracking-[-0.224px]" style={{ color: mutedColor }}>{label}</p>
         {change && <p className={`text-[14px] font-medium tracking-[-0.224px] ${changeColors[changeType]}`}>{change}</p>}
       </div>
     )
@@ -126,7 +152,18 @@ const featureCardStyles = {
 }
 
 export function FeatureCard({ title, description, icon, features, accentColor, linkTo }: FeatureCardProps) {
+  const { isDarkMode } = useTheme()
   const styles = featureCardStyles[accentColor]
+
+  // Theme-aware colors
+  const colors = {
+    iconBg: isDarkMode ? '#1A1A1D' : '#f5f5f7',
+    iconBorder: isDarkMode ? '#27272A' : '#d2d2d7',
+    arrow: isDarkMode ? '#71717A' : '#86868b',
+    title: isDarkMode ? '#FAFAFA' : '#1d1d1f',
+    description: isDarkMode ? '#A1A1AA' : '#6e6e73',
+    featureText: isDarkMode ? '#D4D4D8' : '#1d1d1f',
+  }
 
   return (
     <Link
@@ -160,19 +197,20 @@ export function FeatureCard({ title, description, icon, features, accentColor, l
         <div style={{
           padding: 16,
           borderRadius: 16,
-          border: '1px solid #27272A',
-          backgroundColor: '#1A1A1D'
+          border: `1px solid ${colors.iconBorder}`,
+          backgroundColor: colors.iconBg,
+          transition: 'background-color 0.3s ease, border-color 0.3s ease'
         }}>
           <span style={{ color: styles.icon }}>{icon}</span>
         </div>
-        <svg style={{ width: 24, height: 24, color: '#71717A' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg style={{ width: 24, height: 24, color: colors.arrow, transition: 'color 0.3s ease' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
       </div>
 
       {/* Content */}
-      <h3 style={{ fontSize: 24, fontWeight: 600, color: '#FAFAFA', marginBottom: 12 }}>{title}</h3>
-      <p style={{ fontSize: 15, color: '#A1A1AA', marginBottom: 32, lineHeight: 1.6 }}>{description}</p>
+      <h3 style={{ fontSize: 24, fontWeight: 600, color: colors.title, marginBottom: 12, transition: 'color 0.3s ease' }}>{title}</h3>
+      <p style={{ fontSize: 15, color: colors.description, marginBottom: 32, lineHeight: 1.6, transition: 'color 0.3s ease' }}>{description}</p>
 
       {/* Features */}
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -182,8 +220,9 @@ export function FeatureCard({ title, description, icon, features, accentColor, l
             alignItems: 'center',
             gap: 12,
             fontSize: 14,
-            color: '#D4D4D8',
-            marginBottom: 16
+            color: colors.featureText,
+            marginBottom: 16,
+            transition: 'color 0.3s ease'
           }}>
             <div style={{
               width: 8,

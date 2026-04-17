@@ -20,6 +20,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Card } from '../components/ui/Card'
 import { StatusBadge } from '../components/ui/Badge'
 import { ProgressMetric } from '../components/ui/Metric'
+import { useTheme } from '../context/ThemeContext'
+import { X } from 'lucide-react'
 
 interface Sector {
   ticker: string
@@ -56,6 +58,22 @@ export default function SectorRotation() {
   const [loading, setLoading] = useState(true)
   const [isDbConnected, setIsDbConnected] = useState(false)
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleTimeString())
+  const { isDarkMode } = useTheme()
+
+  // Theme-aware colors
+  const colors = {
+    text: isDarkMode ? '#FAFAFA' : '#1d1d1f',
+    muted: isDarkMode ? '#A1A1AA' : '#6e6e73',
+    subtle: isDarkMode ? '#52525B' : '#86868b',
+    surface: isDarkMode ? '#27272A' : '#f5f5f7',
+    border: isDarkMode ? '#27272A' : '#d2d2d7',
+    grid: isDarkMode ? '#27272A' : '#e5e5e7',
+    tooltip: {
+      bg: isDarkMode ? '#18181B' : '#ffffff',
+      border: isDarkMode ? '#27272A' : '#d2d2d7',
+    },
+    negative: isDarkMode ? '#52525B' : '#9ca3af',
+  }
 
   useEffect(() => {
     checkDbStatus()
@@ -139,7 +157,7 @@ export default function SectorRotation() {
       <div className="min-h-screen bg-canvas flex items-center justify-center">
         <div className="flex flex-col items-center gap-6">
           <Activity className="w-16 h-16 text-emerald-500 animate-pulse" />
-          <p className="text-zinc-400 font-mono text-lg tracking-widest uppercase">Scanning Market Sectors...</p>
+          <p className="font-mono text-lg tracking-widest uppercase" style={{ color: colors.muted }}>Scanning Market Sectors...</p>
         </div>
       </div>
     )
@@ -154,39 +172,45 @@ export default function SectorRotation() {
             <TrendingUp className="w-7 h-7 text-black" />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold text-white">Sector Rotation Scanner</h1>
-            <p className="text-base text-zinc-500">Identify momentum and rotation patterns</p>
+            <h1 className="text-2xl font-semibold" style={{ color: colors.text }}>Sector Rotation Scanner</h1>
+            <p className="text-base" style={{ color: colors.muted }}>Identify momentum and rotation patterns</p>
           </div>
         </div>
-        <div className="flex items-center gap-6 text-sm font-mono text-zinc-400">
+        <div className="flex items-center gap-6 text-sm font-mono" style={{ color: colors.muted }}>
           <StatusBadge
             status={isDbConnected ? 'connected' : 'disconnected'}
             label={isDbConnected ? 'S&P 1500 Connected' : 'Demo Mode'}
           />
-          <button onClick={handleRefresh} className="p-2.5 hover:bg-zinc-800 rounded-xl transition-colors">
+          <button
+            onClick={handleRefresh}
+            className="p-2.5 rounded-xl transition-colors"
+            style={{ backgroundColor: 'transparent' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.surface}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
             <Activity className={`w-5 h-5 ${loading ? 'animate-spin' : ''} text-emerald-500`} />
           </button>
-          <span className="text-zinc-500">Last: {lastUpdated}</span>
+          <span style={{ color: colors.muted }}>Last: {lastUpdated}</span>
         </div>
       </div>
 
       {/* Sector Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
         <Card variant="base" className="lg:col-span-2 p-8">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-400 mb-6">
+          <h2 className="text-sm font-semibold uppercase tracking-widest mb-6" style={{ color: colors.muted }}>
             Sector Acceleration Scan
           </h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={sectors}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                <XAxis dataKey="ticker" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} vertical={false} />
+                <XAxis dataKey="ticker" stroke={colors.muted} fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke={colors.muted} fontSize={12} tickLine={false} axisLine={false}
                   tickFormatter={(val) => (val * 100).toFixed(0) + '%'} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#18181b',
-                    border: '1px solid #27272a',
+                    backgroundColor: colors.tooltip.bg,
+                    border: `1px solid ${colors.tooltip.border}`,
                     borderRadius: '12px',
                     fontSize: '14px'
                   }}
@@ -198,7 +222,7 @@ export default function SectorRotation() {
                     if (isSelected) {
                       fill = '#10b981' // Emerald-500 for selected
                     } else if (entry.spread <= 0) {
-                      fill = '#52525B' // Zinc-600 for negative
+                      fill = colors.negative // Theme-aware for negative
                     }
                     return (
                       <Cell
@@ -216,12 +240,23 @@ export default function SectorRotation() {
         </Card>
 
         {/* Selected Sector Details */}
-        <Card className="bg-gradient-emerald border-emerald-500/20 p-8">
-          <p className="text-sm font-mono text-emerald-500/70 uppercase tracking-widest mb-3">
+        <Card
+          className="p-8"
+          style={{
+            background: isDarkMode
+              ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%)'
+              : 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%)',
+            border: `1px solid ${isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.4)'}`
+          }}
+        >
+          <p
+            className="text-sm font-mono uppercase tracking-widest mb-3"
+            style={{ color: isDarkMode ? 'rgba(16, 185, 129, 0.7)' : '#059669' }}
+          >
             {getOrdinal(getLeaderboardPosition(selectedSector?.ticker || ''))} on Leaderboard
           </p>
-          <h3 className="text-5xl font-bold text-white mb-2">{selectedSector?.ticker}</h3>
-          <p className="text-zinc-400 text-lg mb-8">{selectedSector?.name}</p>
+          <h3 className="text-5xl font-bold mb-2" style={{ color: colors.text }}>{selectedSector?.ticker}</h3>
+          <p className="text-lg mb-8" style={{ color: colors.muted }}>{selectedSector?.name}</p>
 
           <div className="space-y-5">
             <ProgressMetric
@@ -238,24 +273,30 @@ export default function SectorRotation() {
               progressColor="zinc"
               suffix="%"
             />
-            <div className="pt-5 border-t border-zinc-800">
+            <div className="pt-5" style={{ borderTop: `1px solid ${colors.border}` }}>
               <div className="flex justify-between items-baseline">
-                <span className="text-sm text-zinc-200 font-semibold">Acceleration Spread</span>
+                <span className="text-sm font-semibold" style={{ color: colors.text }}>Acceleration Spread</span>
                 <span className="text-2xl font-mono text-emerald-500">+{formatPercent(selectedSector?.spread || 0)}</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-10 p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 flex items-center gap-4">
-            <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
-            <p className="text-sm text-emerald-200/80">Momentum increasing. Sector primed for stock selection.</p>
+          <div
+            className="mt-10 p-4 rounded-2xl flex items-center gap-4"
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.08)',
+              border: `1px solid ${isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.3)'}`
+            }}
+          >
+            <CheckCircle2 className="w-6 h-6 shrink-0" style={{ color: isDarkMode ? '#10B981' : '#059669' }} />
+            <p className="text-sm" style={{ color: isDarkMode ? 'rgba(16, 185, 129, 0.9)' : '#059669' }}>Momentum increasing. Sector primed for stock selection.</p>
           </div>
         </Card>
       </div>
 
       {/* Stock Leaders */}
       <div className="mb-8">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-zinc-400 mb-6">
+        <h2 className="text-sm font-semibold uppercase tracking-widest mb-6" style={{ color: colors.muted }}>
           Momentum Leaders in {selectedSector?.ticker}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -270,26 +311,30 @@ export default function SectorRotation() {
                 key={stock.ticker}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`bg-surface border rounded-2xl p-7 overflow-hidden relative ${
-                  isSqueezeTriggered
-                    ? 'border-emerald-500/50 shadow-glow'
-                    : 'border-zinc-800/60'
-                }`}
+                className="border rounded-2xl p-7 overflow-hidden relative"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderColor: isSqueezeTriggered ? 'rgba(16, 185, 129, 0.5)' : colors.border,
+                  boxShadow: isSqueezeTriggered ? '0 0 20px rgba(16, 185, 129, 0.2)' : 'none'
+                }}
               >
                 {isSqueezeTriggered && (
-                  <div className="absolute top-0 right-0 bg-emerald-500 text-black text-xs font-bold px-4 py-1.5 rounded-bl-xl uppercase tracking-tight">
+                  <div
+                    className="absolute top-0 right-0 text-xs font-bold px-4 py-1.5 rounded-bl-xl uppercase tracking-tight"
+                    style={{ backgroundColor: '#10B981', color: '#ffffff' }}
+                  >
                     Triggered
                   </div>
                 )}
 
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h4 className="text-3xl font-bold text-white leading-none mb-2">{stock.ticker}</h4>
-                    <p className="text-zinc-500 text-sm">{stock.name}</p>
+                    <h4 className="text-3xl font-bold leading-none mb-2" style={{ color: colors.text }}>{stock.ticker}</h4>
+                    <p className="text-sm" style={{ color: colors.muted }}>{stock.name}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-mono text-white">${stock.price.toFixed(2)}</p>
-                    <p className="text-xs text-zinc-500 uppercase mt-1">Current Price</p>
+                    <p className="text-2xl font-mono" style={{ color: colors.text }}>${stock.price.toFixed(2)}</p>
+                    <p className="text-xs uppercase mt-1" style={{ color: colors.muted }}>Current Price</p>
                   </div>
                 </div>
 
@@ -302,39 +347,55 @@ export default function SectorRotation() {
                 />
 
                 <div className="grid grid-cols-3 gap-3 mt-6">
-                  <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 ${
-                    isPriceBreakout
-                      ? 'bg-emerald-500/10 border-emerald-500/40'
-                      : 'bg-zinc-800/30 border-zinc-700/30'
-                  }`}>
-                    <ArrowUpRight className={`w-5 h-5 ${isPriceBreakout ? 'text-emerald-500' : 'text-zinc-600'}`} />
-                    <span className={`text-xs uppercase font-bold ${isPriceBreakout ? 'text-emerald-500' : 'text-zinc-600'}`}>Price</span>
+                  <div
+                    className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: isPriceBreakout ? 'rgba(16, 185, 129, 0.1)' : isDarkMode ? 'rgba(63, 63, 70, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                      borderColor: isPriceBreakout ? 'rgba(16, 185, 129, 0.4)' : colors.border
+                    }}
+                  >
+                    <ArrowUpRight className={`w-5 h-5 ${isPriceBreakout ? 'text-emerald-500' : isDarkMode ? 'text-zinc-600' : 'text-zinc-400'}`} />
+                    <span className={`text-xs uppercase font-bold ${isPriceBreakout ? 'text-emerald-500' : isDarkMode ? 'text-zinc-600' : 'text-zinc-500'}`}>Price</span>
                   </div>
-                  <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 ${
-                    isVolumeSpike
-                      ? 'bg-emerald-500/10 border-emerald-500/40'
-                      : 'bg-zinc-800/30 border-zinc-700/30'
-                  }`}>
-                    <Activity className={`w-5 h-5 ${isVolumeSpike ? 'text-emerald-500' : 'text-zinc-600'}`} />
-                    <span className={`text-xs uppercase font-bold ${isVolumeSpike ? 'text-emerald-500' : 'text-zinc-600'}`}>Volume</span>
+                  <div
+                    className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: isVolumeSpike ? 'rgba(16, 185, 129, 0.1)' : isDarkMode ? 'rgba(63, 63, 70, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                      borderColor: isVolumeSpike ? 'rgba(16, 185, 129, 0.4)' : colors.border
+                    }}
+                  >
+                    <Activity className={`w-5 h-5 ${isVolumeSpike ? 'text-emerald-500' : isDarkMode ? 'text-zinc-600' : 'text-zinc-400'}`} />
+                    <span className={`text-xs uppercase font-bold ${isVolumeSpike ? 'text-emerald-500' : isDarkMode ? 'text-zinc-600' : 'text-zinc-500'}`}>Volume</span>
                   </div>
-                  <div className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 ${
-                    stock.bb_expanding
-                      ? 'bg-emerald-500/10 border-emerald-500/40'
-                      : 'bg-zinc-800/30 border-zinc-700/30'
-                  }`}>
-                    <BarChart3 className={`w-5 h-5 ${stock.bb_expanding ? 'text-emerald-500' : 'text-zinc-600'}`} />
-                    <span className={`text-xs uppercase font-bold ${stock.bb_expanding ? 'text-emerald-500' : 'text-zinc-600'}`}>Bands</span>
+                  <div
+                    className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: stock.bb_expanding ? 'rgba(16, 185, 129, 0.1)' : isDarkMode ? 'rgba(63, 63, 70, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                      borderColor: stock.bb_expanding ? 'rgba(16, 185, 129, 0.4)' : colors.border
+                    }}
+                  >
+                    <BarChart3 className={`w-5 h-5 ${stock.bb_expanding ? 'text-emerald-500' : isDarkMode ? 'text-zinc-600' : 'text-zinc-400'}`} />
+                    <span className={`text-xs uppercase font-bold ${stock.bb_expanding ? 'text-emerald-500' : isDarkMode ? 'text-zinc-600' : 'text-zinc-500'}`}>Bands</span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setAnalyzedStock(stock)}
-                  className={`w-full mt-6 py-4 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${
-                    isSqueezeTriggered
-                      ? 'bg-emerald-500 text-black hover:bg-emerald-400'
-                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                  }`}
+                  className="w-full mt-6 py-4 rounded-xl text-sm font-bold uppercase tracking-widest transition-all"
+                  style={{
+                    backgroundColor: isSqueezeTriggered ? '#10B981' : isDarkMode ? '#27272A' : '#f5f5f7',
+                    color: isSqueezeTriggered ? '#000' : isDarkMode ? '#A1A1AA' : '#6e6e73',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isSqueezeTriggered) {
+                      e.currentTarget.style.backgroundColor = '#34D399';
+                    } else {
+                      e.currentTarget.style.backgroundColor = isDarkMode ? '#3F3F46' : '#e5e5e7';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = isSqueezeTriggered ? '#10B981' : isDarkMode ? '#27272A' : '#f5f5f7';
+                  }}
                 >
                   Analyze Setup
                 </button>
@@ -352,84 +413,117 @@ export default function SectorRotation() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setAnalyzedStock(null)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8"
+            className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-8"
+            style={{ backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.6)' }}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-surface border border-zinc-700 rounded-3xl p-10 max-w-lg w-full"
+              className="rounded-3xl p-10 max-w-lg w-full"
+              style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
             >
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h3 className="text-3xl font-bold">{analyzedStock.ticker}</h3>
-                  <p className="text-zinc-400 text-base mt-1">{analyzedStock.name}</p>
+                  <h3 className="text-3xl font-bold" style={{ color: colors.text }}>{analyzedStock.ticker}</h3>
+                  <p className="text-base mt-1" style={{ color: colors.muted }}>{analyzedStock.name}</p>
                 </div>
-                <button onClick={() => setAnalyzedStock(null)} className="text-zinc-500 hover:text-white text-xl">
-                  ✕
+                <button
+                  onClick={() => setAnalyzedStock(null)}
+                  className="p-1 rounded-lg transition-colors"
+                  style={{ color: colors.muted }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.text;
+                    e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = colors.muted;
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <X size={24} />
                 </button>
               </div>
 
-              <Card variant="raised" className="p-6 mb-6">
-                <h4 className="text-sm font-mono text-zinc-500 uppercase mb-4">Bollinger Bands (20, 2)</h4>
+              <Card variant="raised" className="p-6 mb-6" style={{ backgroundColor: isDarkMode ? '#2a2a2d' : '#ffffff' }}>
+                <h4 className="text-sm font-mono uppercase mb-4" style={{ color: colors.muted }}>Bollinger Bands (20, 2)</h4>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm text-zinc-400">Upper Band</span>
+                    <span className="text-sm" style={{ color: colors.muted }}>Upper Band</span>
                     <span className="text-base font-mono text-emerald-400">${analyzedStock.bb_upper.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-zinc-400">Middle (SMA20)</span>
-                    <span className="text-base font-mono text-white">${analyzedStock.bb_middle.toFixed(2)}</span>
+                    <span className="text-sm" style={{ color: colors.muted }}>Middle (SMA20)</span>
+                    <span className="text-base font-mono" style={{ color: colors.text }}>${analyzedStock.bb_middle.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-zinc-400">Lower Band</span>
+                    <span className="text-sm" style={{ color: colors.muted }}>Lower Band</span>
                     <span className="text-base font-mono text-red-400">${analyzedStock.bb_lower.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between pt-3 border-t border-zinc-700">
-                    <span className="text-sm text-zinc-300">Current Price</span>
-                    <span className="text-lg font-mono text-white font-bold">${analyzedStock.price.toFixed(2)}</span>
+                  <div className="flex justify-between pt-3" style={{ borderTop: `1px solid ${colors.border}` }}>
+                    <span className="text-sm" style={{ color: colors.muted }}>Current Price</span>
+                    <span className="text-lg font-mono font-bold" style={{ color: colors.text }}>${analyzedStock.price.toFixed(2)}</span>
                   </div>
                 </div>
               </Card>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <Card className={`p-5 ${analyzedStock.price > (analyzedStock.sma50 || 0) ? 'bg-emerald-500/10 border-emerald-500/30' : ''}`}>
-                  <span className="text-xs text-zinc-500 uppercase">Price vs SMA50</span>
+                <Card
+                  className="p-5"
+                  style={{
+                    backgroundColor: analyzedStock.price > (analyzedStock.sma50 || 0) ? 'rgba(16, 185, 129, 0.1)' : colors.surface,
+                    borderColor: analyzedStock.price > (analyzedStock.sma50 || 0) ? 'rgba(16, 185, 129, 0.3)' : colors.border
+                  }}
+                >
+                  <span className="text-xs uppercase" style={{ color: colors.muted }}>Price vs SMA50</span>
                   <p className={`text-base font-mono mt-2 ${analyzedStock.price > (analyzedStock.sma50 || 0) ? 'text-emerald-400' : 'text-red-400'}`}>
                     {analyzedStock.price > (analyzedStock.sma50 || 0) ? 'Above' : 'Below'} ${analyzedStock.sma50?.toFixed(2) || 'N/A'}
                   </p>
                 </Card>
-                <Card className={`p-5 ${analyzedStock.price > (analyzedStock.sma200 || 0) ? 'bg-emerald-500/10 border-emerald-500/30' : ''}`}>
-                  <span className="text-xs text-zinc-500 uppercase">Price vs SMA200</span>
+                <Card
+                  className="p-5"
+                  style={{
+                    backgroundColor: analyzedStock.price > (analyzedStock.sma200 || 0) ? 'rgba(16, 185, 129, 0.1)' : colors.surface,
+                    borderColor: analyzedStock.price > (analyzedStock.sma200 || 0) ? 'rgba(16, 185, 129, 0.3)' : colors.border
+                  }}
+                >
+                  <span className="text-xs uppercase" style={{ color: colors.muted }}>Price vs SMA200</span>
                   <p className={`text-base font-mono mt-2 ${analyzedStock.price > (analyzedStock.sma200 || 0) ? 'text-emerald-400' : 'text-red-400'}`}>
                     {analyzedStock.price > (analyzedStock.sma200 || 0) ? 'Above' : 'Below'} ${analyzedStock.sma200?.toFixed(2) || 'N/A'}
                   </p>
                 </Card>
               </div>
 
-              <Card variant="raised" className="p-5">
-                <h4 className="text-sm font-mono text-zinc-500 uppercase mb-3">Setup Strength</h4>
+              <Card variant="raised" className="p-5" style={{ backgroundColor: isDarkMode ? '#2a2a2d' : '#ffffff' }}>
+                <h4 className="text-sm font-mono uppercase mb-3" style={{ color: colors.muted }}>Setup Strength</h4>
                 <div className="flex items-center gap-5">
-                  <div className="flex-1 bg-zinc-700 h-4 rounded-full overflow-hidden">
+                  <div
+                    className="flex-1 h-4 rounded-full overflow-hidden"
+                    style={{ backgroundColor: isDarkMode ? '#3f3f46' : '#e5e5e7' }}
+                  >
                     <div
-                      className={`h-full transition-all ${
-                        getStrengthScore(analyzedStock) >= 75
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                      className="h-full transition-all"
+                      style={{
+                        width: `${getStrengthScore(analyzedStock)}%`,
+                        background: getStrengthScore(analyzedStock) >= 75
+                          ? 'linear-gradient(to right, #059669, #34d399)'
                           : getStrengthScore(analyzedStock) >= 50
-                            ? 'bg-gradient-to-r from-amber-600 to-amber-400'
-                            : 'bg-gradient-to-r from-red-600 to-red-400'
-                      }`}
-                      style={{ width: `${getStrengthScore(analyzedStock)}%` }}
+                            ? 'linear-gradient(to right, #d97706, #fbbf24)'
+                            : 'linear-gradient(to right, #dc2626, #f87171)'
+                      }}
                     />
                   </div>
-                  <span className={`text-xl font-mono font-bold ${
-                    getStrengthScore(analyzedStock) >= 75
-                      ? 'text-emerald-400'
-                      : getStrengthScore(analyzedStock) >= 50
-                        ? 'text-amber-400'
-                        : 'text-red-400'
-                  }`}>
+                  <span
+                    className="text-xl font-mono font-bold"
+                    style={{
+                      color: getStrengthScore(analyzedStock) >= 75
+                        ? '#34d399'
+                        : getStrengthScore(analyzedStock) >= 50
+                          ? '#fbbf24'
+                          : '#f87171'
+                    }}
+                  >
                     {getStrengthScore(analyzedStock)}%
                   </span>
                 </div>

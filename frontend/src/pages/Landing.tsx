@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Database } from 'lucide-react'
-import { FeatureCard } from '../components/ui'
+import { FeatureCard, ThemeToggle } from '../components/ui'
 import { Activity, BarChart2, Terminal } from 'lucide-react'
+import { useTheme } from '../context/ThemeContext'
 
 const tools = [
   {
@@ -56,15 +57,45 @@ const stats = [
 ]
 
 export default function Landing() {
+  const { isDarkMode } = useTheme()
+
+  // Theme-aware colors
+  const colors = {
+    bg: isDarkMode ? '#09090B' : '#ffffff',
+    text: isDarkMode ? '#FAFAFA' : '#1d1d1f',
+    muted: isDarkMode ? '#A1A1AA' : '#6e6e73',
+    subtle: isDarkMode ? '#52525B' : '#86868b',
+    surface: isDarkMode ? '#121214' : '#f5f5f7',
+    border: isDarkMode ? '#27272A' : '#d2d2d7',
+    accent: isDarkMode ? '#10B981' : '#0071e3',
+    accentText: isDarkMode ? '#000' : '#fff',
+    badgeBg: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0, 113, 227, 0.1)',
+    badgeBorder: isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(0, 113, 227, 0.2)',
+    badgeText: isDarkMode ? '#34D399' : '#0066cc',
+    secondaryBtnBorder: isDarkMode ? '#3F3F46' : '#d2d2d7',
+    secondaryBtnText: isDarkMode ? '#A1A1AA' : '#6e6e73',
+    orb1: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0, 113, 227, 0.1)',
+    orb2: isDarkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 113, 227, 0.08)',
+    orb3: isDarkMode ? 'rgba(168, 85, 247, 0.1)' : 'rgba(0, 113, 227, 0.06)',
+    gradient: isDarkMode
+      ? 'linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent, transparent)'
+      : 'linear-gradient(to bottom, rgba(0, 113, 227, 0.05), transparent, transparent)',
+    heroGlow: isDarkMode
+      ? 'rgba(16, 185, 129, 0.05)'
+      : 'rgba(0, 113, 227, 0.05)',
+    heroGlowOpacity: isDarkMode ? 0.3 : 0.2,
+  }
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#09090B' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: colors.bg, transition: 'background-color 0.3s ease' }}>
       {/* Hero Section */}
       <section style={{ position: 'relative', overflow: 'hidden' }}>
         {/* Background effects */}
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent, transparent)'
+          background: colors.gradient,
+          transition: 'background 0.3s ease'
         }} />
         <div style={{
           position: 'absolute',
@@ -73,10 +104,11 @@ export default function Landing() {
           transform: 'translateX(-50%)',
           width: 800,
           height: 600,
-          background: 'rgba(16, 185, 129, 0.05)',
+          background: colors.heroGlow,
           borderRadius: '50%',
           filter: 'blur(100px)',
-          opacity: 0.3
+          opacity: colors.heroGlowOpacity,
+          transition: 'background 0.3s ease, opacity 0.3s ease'
         }} />
 
         {/* Floating orbs */}
@@ -86,9 +118,10 @@ export default function Landing() {
           left: '25%',
           width: 256,
           height: 256,
-          background: 'rgba(16, 185, 129, 0.1)',
+          background: colors.orb1,
           borderRadius: '50%',
-          filter: 'blur(100px)'
+          filter: 'blur(100px)',
+          transition: 'background 0.3s ease'
         }} />
         <div style={{
           position: 'absolute',
@@ -96,9 +129,10 @@ export default function Landing() {
           right: '25%',
           width: 192,
           height: 192,
-          background: 'rgba(59, 130, 246, 0.1)',
+          background: colors.orb2,
           borderRadius: '50%',
-          filter: 'blur(100px)'
+          filter: 'blur(100px)',
+          transition: 'background 0.3s ease'
         }} />
         <div style={{
           position: 'absolute',
@@ -106,9 +140,10 @@ export default function Landing() {
           right: '33%',
           width: 128,
           height: 128,
-          background: 'rgba(168, 85, 247, 0.1)',
+          background: colors.orb3,
           borderRadius: '50%',
-          filter: 'blur(100px)'
+          filter: 'blur(100px)',
+          transition: 'background 0.3s ease'
         }} />
 
         <div style={{
@@ -118,10 +153,20 @@ export default function Landing() {
           margin: '0 auto',
           padding: '64px'
         }}>
-          {/* Header */}
+          {/* Header with Theme Toggle */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            paddingTop: 16,
+            marginBottom: 48
+          }}>
+            <ThemeToggle variant="ghost" size="md" />
+          </div>
+
+          {/* Hero Content */}
           <div style={{
             textAlign: 'center',
-            paddingTop: 80,
+            paddingTop: 32,
             marginBottom: 100
           }}>
             <div style={{
@@ -129,12 +174,13 @@ export default function Landing() {
               alignItems: 'center',
               gap: 12,
               padding: '14px 28px',
-              background: 'rgba(16, 185, 129, 0.1)',
+              background: colors.badgeBg,
               borderRadius: 50,
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              color: '#34D399',
+              border: `1px solid ${colors.badgeBorder}`,
+              color: colors.badgeText,
               fontSize: 15,
-              marginBottom: 48
+              marginBottom: 48,
+              transition: 'background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease'
             }}>
               <Database style={{ width: 20, height: 20 }} />
               <span>PostgreSQL Powered</span>
@@ -143,19 +189,21 @@ export default function Landing() {
             <h1 style={{
               fontSize: 80,
               fontWeight: 700,
-              color: '#FAFAFA',
+              color: colors.text,
               marginBottom: 32,
-              letterSpacing: '-0.04em'
+              letterSpacing: '-0.04em',
+              transition: 'color 0.3s ease'
             }}>
               TradeCraft
             </h1>
 
             <p style={{
               fontSize: 22,
-              color: '#A1A1AA',
+              color: colors.muted,
               maxWidth: 640,
               margin: '0 auto 56px',
-              lineHeight: 1.6
+              lineHeight: 1.6,
+              transition: 'color 0.3s ease'
             }}>
               Unified trading platform for sector rotation analysis, AI-powered screening, and quantitative strategy building.
             </p>
@@ -170,17 +218,20 @@ export default function Landing() {
               <Link
                 to="/sectors"
                 style={{
-                  background: '#10B981',
-                  color: '#000',
+                  background: colors.accent,
+                  color: colors.accentText,
                   padding: '20px 48px',
                   borderRadius: 12,
                   fontSize: 16,
                   fontWeight: 600,
                   textDecoration: 'none',
-                  boxShadow: '0 0 30px rgba(16, 185, 129, 0.25)',
+                  boxShadow: isDarkMode
+                    ? '0 0 30px rgba(16, 185, 129, 0.25)'
+                    : '0 0 30px rgba(0, 113, 227, 0.25)',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 12
+                  gap: 12,
+                  transition: 'background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease'
                 }}
               >
                 Launch Scanner
@@ -192,13 +243,14 @@ export default function Landing() {
                 to="/sectors"
                 style={{
                   background: 'transparent',
-                  color: '#A1A1AA',
+                  color: colors.secondaryBtnText,
                   padding: '20px 40px',
                   borderRadius: 12,
                   fontSize: 16,
                   fontWeight: 500,
                   textDecoration: 'none',
-                  border: '1px solid #3F3F46'
+                  border: `1px solid ${colors.secondaryBtnBorder}`,
+                  transition: 'color 0.3s ease, border-color 0.3s ease'
                 }}
               >
                 Explore Features
@@ -217,27 +269,32 @@ export default function Landing() {
               <div
                 key={stat.label}
                 style={{
-                  background: '#121214',
-                  border: '1px solid #27272A',
+                  background: colors.surface,
+                  border: `1px solid ${colors.border}`,
                   borderRadius: 24,
                   padding: '48px 40px',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  transition: 'background-color 0.3s ease, border-color 0.3s ease'
                 }}
               >
                 <p style={{
                   fontSize: 64,
                   fontWeight: 700,
-                  color: '#FAFAFA',
-                  marginBottom: 12
+                  color: colors.text,
+                  marginBottom: 12,
+                  transition: 'color 0.3s ease'
                 }}>{stat.value}</p>
                 <p style={{
                   fontSize: 14,
-                  color: '#A1A1AA',
+                  color: colors.muted,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.15em'
+                  letterSpacing: '0.15em',
+                  transition: 'color 0.3s ease'
                 }}>{stat.label}</p>
                 {stat.suffix && (
-                  <span style={{ fontSize: 16, color: '#71717A', marginLeft: 4 }}>{stat.suffix}</span>
+                  <span style={{ fontSize: 16, color: colors.subtle, marginLeft: 4, transition: 'color 0.3s ease' }}>
+                    {stat.suffix}
+                  </span>
                 )}
               </div>
             ))}
@@ -250,7 +307,8 @@ export default function Landing() {
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
-              color: '#52525B'
+              color: colors.subtle,
+              transition: 'color 0.3s ease'
             }}>Platform Tools</h2>
           </div>
 
@@ -278,9 +336,10 @@ export default function Landing() {
           <div style={{
             textAlign: 'center',
             padding: '48px 0',
-            borderTop: '1px solid #27272A'
+            borderTop: `1px solid ${colors.border}`,
+            transition: 'border-color 0.3s ease'
           }}>
-            <p style={{ fontSize: 14, color: '#52525B' }}>
+            <p style={{ fontSize: 14, color: colors.subtle, transition: 'color 0.3s ease' }}>
               Combined from StockScreener, Sector-Rotation-Scanner, and QuantGen
             </p>
           </div>
