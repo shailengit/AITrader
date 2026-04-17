@@ -99,7 +99,7 @@ class DataService:
                 df = pd.read_sql(query, conn, params=params)
 
             if df.empty:
-                logger.warning(f"No data found for ticker {ticker}")
+                logger.debug(f"No data found for ticker {ticker}")
                 return None
 
             # Ensure Date column is datetime
