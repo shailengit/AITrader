@@ -112,26 +112,8 @@ def extract_signal_from_strategy(code: str, target_date: datetime,
                 # Check if target_date is in the index
                 date_str = target_date.strftime('%Y-%m-%d')
 
-                # Debug: Show signal statistics for the window
-                entry_sum = entries.sum() if len(entries) > 0 else 0
-                exit_sum = exits.sum() if isinstance(exits, pd.Series) and len(exits) > 0 else 0
-                print(f"DEBUG: Signal window - entries sum={entry_sum}, exits sum={exit_sum}")
-                print(f"DEBUG: Signal window - entries type={entries.dtype}, exits type={exits.dtype if hasattr(exits, 'dtype') else type(exits)}")
-                print(f"DEBUG: Signal window - target_date={target_date}, date_str={date_str}")
-                print(f"DEBUG: Signal window - entries index first={entries.index[0] if len(entries) > 0 else 'N/A'}")
-                print(f"DEBUG: Signal window - entries index last={entries.index[-1] if len(entries) > 0 else 'N/A'}")
-                print(f"DEBUG: Signal window - entries index type={type(entries.index)}")
-                print(f"DEBUG: Signal window - target_date in entries.index: {target_date in entries.index}")
-                # Show index as strings
-                idx_list = [str(idx) for idx in entries.index[:5]]
-                print(f"DEBUG: Signal window - first 5 index strings: {idx_list}")
-
                 # Try exact match first
-                # Debug: check exact match
                 target_date_check = target_date
-                print(f"DEBUG: Checking exact match - target_date={target_date_check}, type={type(target_date_check)}")
-                if target_date_check in entries.index:
-                    print(f"DEBUG: EXACT MATCH FOUND!")
                     entry_signal = bool(entries.loc[target_date])
                     exit_signal = bool(exits.loc[target_date]) if isinstance(exits, pd.Series) and target_date in exits.index else False
                     if entry_signal and not exit_signal:

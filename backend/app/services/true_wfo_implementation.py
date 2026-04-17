@@ -17,7 +17,10 @@ Fixes applied vs original:
 
 import re
 import datetime
+import logging
 from typing import Optional, Tuple, List, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -345,7 +348,7 @@ def calculate_window_configs(
         return []
 
     total_days = (end - start).days
-    print(f"DEBUG: Date range: {start_date} to {end_date} = {total_days} calendar days")
+    logger.debug(f"Date range: {start_date} to {end_date} = {total_days} calendar days")
     if total_days <= 0:
         return []
 
@@ -355,7 +358,7 @@ def calculate_window_configs(
     ratio        = wfo_conf.get("ratio", 0.7)
     split_method = wfo_conf.get("splitMethod", "ratio")
 
-    print(f"DEBUG: train_days={train_days}, test_days={test_days}, "
+    logger.debug(f" train_days={train_days}, test_days={test_days}, "
           f"ratio={ratio}, splitMethod={split_method}")
 
     # Enforce minimum window sizes (calendar days, not business days)
@@ -365,46 +368,46 @@ def calculate_window_configs(
     if train_days is not None and test_days is not None and split_method == "fixed":
         train_len = max(int(train_days), MIN_TRAIN_DAYS)
         test_len  = max(int(test_days),  MIN_TEST_DAYS)
-        print(f"DEBUG: Using fixed days – train_len={train_len}, test_len={test_len}")
+        logger.debug(f" Using fixed days – train_len={train_len}, test_len={test_len}")
     else:
         train_len = max(int(total_days * ratio),       MIN_TRAIN_DAYS)
         test_len  = max(int(total_days * (1 - ratio)), MIN_TEST_DAYS)
-        print(f"DEBUG: Using ratio – train_len={train_len}, test_len={test_len}, "
+        logger.debug(f" Using ratio – train_len={train_len}, test_len={test_len}, "
               f"total_days={total_days}")
 
     # Step size - for short test periods, use 1 day step for more windows
     if test_len <= 3:
         step = 1
-        print(f"DEBUG: Short test period mode - step=1")
+        logger.debug(f" Short test period mode - step=1")
     else:
         step = test_len
-        print(f"DEBUG: Standard mode - step={test_len}")
+        logger.debug(f" Standard mode - step={test_len}")
 
     window_configs: List[Dict[str, str]] = []
-    print(f"DEBUG: Starting window calculation with total_days={total_days}, train_len={train_len}, test_len={test_len}, split_type={split_type}")
+    logger.debug(f" Starting window calculation with total_days={total_days}, train_len={train_len}, test_len={test_len}, split_type={split_type}")
 
     # Calculate max possible windows
     if test_len == 1:
         # For single-day testing, we can have many more windows
         max_windows = total_days - train_len
-        print(f"DEBUG: Single-day mode - max_windows = {total_days} - {train_len} = {max_windows}")
+        logger.debug(f" Single-day mode - max_windows = {total_days} - {train_len} = {max_windows}")
     else:
         max_windows = max(1, (total_days - train_len) // step)
-        print(f"DEBUG: Multi-day mode - max_windows = ({total_days} - {train_len}) // {step} = {max_windows}")
+        logger.debug(f" Multi-day mode - max_windows = ({total_days} - {train_len}) // {step} = {max_windows}")
 
     # Clamp n_windows to what the data supports (or use max if n_windows is 0/not set)
-    print(f"DEBUG: Input n_windows={n_windows}, max_windows={max_windows}")
+    logger.debug(f" Input n_windows={n_windows}, max_windows={max_windows}")
     if n_windows <= 0 or n_windows > max_windows:
         old_n_windows = n_windows
         n_windows = max_windows
-        print(f"DEBUG: Adjusted n_windows from {old_n_windows} to {n_windows} (max possible)")
+        logger.debug(f" Adjusted n_windows from {old_n_windows} to {n_windows} (max possible)")
     else:
-        print(f"DEBUG: Using provided n_windows={n_windows} (not exceeding max)")
+        logger.debug(f" Using provided n_windows={n_windows} (not exceeding max)")
 
-    print(f"DEBUG: Generating {n_windows} windows with step={step}")
+    logger.debug(f" Generating {n_windows} windows with step={step}")
     for i in range(n_windows):
         if i < 3 or i > n_windows - 4:  # Debug first 3 and last 3 windows
-            print(f"DEBUG: Window {i+1}/{n_windows}")
+            logger.debug(f" Window {i+1}/{n_windows}")
         if split_type == "expanding":
             # Expanding window: training always starts at the beginning
             train_start_day = 0
@@ -431,9 +434,9 @@ def calculate_window_configs(
                 "test_end":    (start + datetime.timedelta(days=test_end_day)).strftime("%Y-%m-%d"),
             })
             if i < 3 or i > n_windows - 4:
-                print(f"DEBUG: Added window {i+1}: train={window_configs[-1]['train_start']} to {window_configs[-1]['train_end']}, test={window_configs[-1]['test_start']} to {window_configs[-1]['test_end']}")
+                logger.debug(f" Added window {i+1}: train={window_configs[-1]['train_start']} to {window_configs[-1]['train_end']}, test={window_configs[-1]['test_start']} to {window_configs[-1]['test_end']}")
 
-    print(f"DEBUG: Total windows generated: {len(window_configs)}")
+    logger.debug(f" Total windows generated: {len(window_configs)}")
     return window_configs
 
 
