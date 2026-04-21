@@ -9,9 +9,11 @@ interface WFOWindow {
   train_end: string;
   test_start?: string;
   test_end?: string;
+  test_date?: string;  // For True WFO - single trade date
   best_param: string;
   train_metric: number;
-  test_metric: number;
+  test_metric?: number;
+  signal?: 'BUY' | 'SELL' | 'HOLD';  // For True WFO
 }
 
 interface HeatmapRow {
@@ -37,7 +39,11 @@ export default function OptimizationResults({ data }: OptimizationResultsProps) 
   const { mode, heatmap, windows, oos_equity, max_windows } = data;
 
   // Helper to format generic metric
-  const fmt = (val: number | string) => (typeof val === 'number' ? val.toFixed(3) : val);
+  const fmt = (val: number | string | undefined) => {
+    if (typeof val === 'number') return val.toFixed(3);
+    if (val === undefined) return 'N/A';
+    return val;
+  };
 
   // State for WFO table
   const [showAllWindows, setShowAllWindows] = useState(false);
@@ -225,10 +231,20 @@ export default function OptimizationResults({ data }: OptimizationResultsProps) 
                 <tr>
                   <th className="p-3 text-left w-16">Window</th>
                   <th className="p-3 text-left">Train Range</th>
-                  <th className="p-3 text-left">Test Range</th>
-                  <th className="p-3 text-left">Best Param</th>
-                  <th className="p-3 text-right">Train Metric</th>
-                  <th className="p-3 text-right">Test Metric</th>
+                  {mode === 'true_wfo' ? (
+                    <>
+                      <th className="p-3 text-left">Test Date</th>
+                      <th className="p-3 text-left">Best Param</th>
+                      <th className="p-3 text-center">Signal</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="p-3 text-left">Test Range</th>
+                      <th className="p-3 text-left">Best Param</th>
+                      <th className="p-3 text-right">Train Metric</th>
+                      <th className="p-3 text-right">Test Metric</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/60">
@@ -249,16 +265,36 @@ export default function OptimizationResults({ data }: OptimizationResultsProps) 
                           <td className="p-3 text-zinc-300">
                             {w.train_start} → {w.train_end}
                           </td>
-                          <td className="p-3 text-zinc-400 text-xs">
-                            {getTestRange(w)}
-                          </td>
-                          <td className="p-3 font-mono text-emerald-400 text-xs">{w.best_param}</td>
-                          <td className="p-3 text-right text-zinc-300">{fmt(w.train_metric)}</td>
-                          <td
-                            className={`p-3 text-right font-bold ${w.test_metric > 0 ? 'text-emerald-400' : 'text-rose-500'}`}
-                          >
-                            {fmt(w.test_metric)}
-                          </td>
+                          {mode === 'true_wfo' ? (
+                            <>
+                              <td className="p-3 text-zinc-400 text-xs">{w.test_date || '-'}</td>
+                              <td className="p-3 font-mono text-emerald-400 text-xs">{w.best_param}</td>
+                              <td className="p-3 text-center">
+                                {w.signal === 'BUY' && (
+                                  <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs font-semibold">BUY</span>
+                                )}
+                                {w.signal === 'SELL' && (
+                                  <span className="px-2 py-1 bg-rose-500/20 text-rose-400 rounded text-xs font-semibold">SELL</span>
+                                )}
+                                {(!w.signal || w.signal === 'HOLD') && (
+                                  <span className="px-2 py-1 bg-zinc-500/20 text-zinc-400 rounded text-xs">HOLD</span>
+                                )}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="p-3 text-zinc-400 text-xs">
+                                {getTestRange(w)}
+                              </td>
+                              <td className="p-3 font-mono text-emerald-400 text-xs">{w.best_param}</td>
+                              <td className="p-3 text-right text-zinc-300">{fmt(w.train_metric)}</td>
+                              <td
+                                className={`p-3 text-right font-bold ${w.test_metric && w.test_metric > 0 ? 'text-emerald-400' : 'text-rose-500'}`}
+                              >
+                                {fmt(w.test_metric)}
+                              </td>
+                            </>
+                          )}
                         </tr>
                       );
                     })}
@@ -273,16 +309,36 @@ export default function OptimizationResults({ data }: OptimizationResultsProps) 
                       <td className="p-3 text-zinc-300">
                         {w.train_start} → {w.train_end}
                       </td>
-                      <td className="p-3 text-zinc-400 text-xs">
-                        {getTestRange(w)}
-                      </td>
-                      <td className="p-3 font-mono text-emerald-400 text-xs">{w.best_param}</td>
-                      <td className="p-3 text-right text-zinc-300">{fmt(w.train_metric)}</td>
-                      <td
-                        className={`p-3 text-right font-bold ${w.test_metric > 0 ? 'text-emerald-400' : 'text-rose-500'}`}
-                      >
-                        {fmt(w.test_metric)}
-                      </td>
+                      {mode === 'true_wfo' ? (
+                        <>
+                          <td className="p-3 text-zinc-400 text-xs">{w.test_date || '-'}</td>
+                          <td className="p-3 font-mono text-emerald-400 text-xs">{w.best_param}</td>
+                          <td className="p-3 text-center">
+                            {w.signal === 'BUY' && (
+                              <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs font-semibold">BUY</span>
+                            )}
+                            {w.signal === 'SELL' && (
+                              <span className="px-2 py-1 bg-rose-500/20 text-rose-400 rounded text-xs font-semibold">SELL</span>
+                            )}
+                            {(!w.signal || w.signal === 'HOLD') && (
+                              <span className="px-2 py-1 bg-zinc-500/20 text-zinc-400 rounded text-xs">HOLD</span>
+                            )}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="p-3 text-zinc-400 text-xs">
+                            {getTestRange(w)}
+                          </td>
+                          <td className="p-3 font-mono text-emerald-400 text-xs">{w.best_param}</td>
+                          <td className="p-3 text-right text-zinc-300">{fmt(w.train_metric)}</td>
+                          <td
+                            className={`p-3 text-right font-bold ${w.test_metric && w.test_metric > 0 ? 'text-emerald-400' : 'text-rose-500'}`}
+                          >
+                            {fmt(w.test_metric)}
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))
                 )}

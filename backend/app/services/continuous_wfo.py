@@ -70,10 +70,13 @@ def run_continuous_true_wfo(
     split_method = wfo_conf.get("splitMethod", "ratio")
 
     # Calculate windows
-    if train_days is not None and test_days is not None and split_method == "fixed":
-        n_windows = 0  # Will be auto-calculated
+    # For True WFO, always auto-calculate to use ALL possible windows (step 1 day at a time)
+    if split_method == "fixed" and train_days is not None and test_days is not None:
+        n_windows = 0  # Will be auto-calculated based on fixed days
     else:
-        n_windows = int(wfo_conf.get("windows", 3))
+        # For ratio-based True WFO, use 0 to auto-calculate max windows
+        # This ensures we trade every single day in the date range
+        n_windows = 0
 
     dates = extract_dates_from_code(code)
     if not dates:
@@ -83,7 +86,8 @@ def run_continuous_true_wfo(
     start_date, end_date = dates
     window_configs = calculate_window_configs(
         start_date, end_date, n_windows,
-        wfo_conf.get("type", "rolling"), wfo_conf
+        wfo_conf.get("type", "rolling"), wfo_conf,
+        is_true_wfo=True  # True WFO always steps 1 day at a time
     )
 
     # Validate windows
@@ -120,12 +124,16 @@ def run_continuous_true_wfo(
 
     window_results = []
     position = 0  # Track current position state (0 = no position, 1 = long)
+    current_signal = 'HOLD'  # Track signal for current window
+    current_trade_date = None  # Track trade date for current window
 
     for i, cfg in enumerate(window_configs):
         result["output"] += f"\nWindow {i+1}/{len(window_configs)}:\n"
 
         best_params = None
         best_val = 0.0
+        current_signal = 'HOLD'  # Reset signal for each window
+        current_trade_date = None
 
         try:
             # Run optimization on training data
@@ -293,26 +301,41 @@ def run_continuous_true_wfo(
                                     break
 
                 # Extract signal based on position
-                # Key insight: We use the most recent signal from the training window
-                # because we don't know the next day's signal until we have that day's data
-                signal = _extract_signal_from_entries_exits(entries, exits, trade_date, position)
+                # Key insight: For True WFO, we use the signal from the LAST day of training
+                # to determine what to do on the NEXT day (trade_date)
+                # The strategy was run on training data, so we need to get the signal from train_end
+                train_end_date = datetime.strptime(cfg['train_end'], "%Y-%m-%d")
+                signal = _extract_signal_from_entries_exits(entries, exits, train_end_date, position)
 
-                # If we can't find a signal for the exact trade_date, use the most recent signal
+                # If we can't find a signal for the exact train_end_date, use the most recent signal
                 # from the training window (the last valid entry/exit)
                 if signal == 'HOLD':
+                    result["output"] += f"  No exact signal for train end {cfg['train_end']}, checking most recent signal...\n"
                     # Get the last True entry or exit from the training window
                     last_entry_date = None
                     last_exit_date = None
-                    for idx, val in entries.items():
-                        if bool(val):
-                            last_entry_date = idx
-                    if isinstance(exits, pd.Series):
-                        for idx, val in exits.items():
+
+                    # Handle DataFrame case (from optimization with multiple parameters)
+                    if isinstance(entries, pd.DataFrame):
+                        # For DataFrames, check if ANY column has a True value for each row
+                        for idx in entries.index:
+                            if entries.loc[idx].any():
+                                last_entry_date = idx
+                        if isinstance(exits, pd.DataFrame):
+                            for idx in exits.index:
+                                if exits.loc[idx].any():
+                                    last_exit_date = idx
+                    elif isinstance(entries, pd.Series):
+                        # For Series, iterate through items
+                        for idx, val in entries.items():
                             if bool(val):
-                                last_exit_date = idx
+                                last_entry_date = idx
+                        if isinstance(exits, pd.Series):
+                            for idx, val in exits.items():
+                                if bool(val):
+                                    last_exit_date = idx
 
                     # Determine what signal to use based on which is more recent
-                    result["output"] += f"  No exact signal for {date_str}, checking most recent signal...\n"
                     if last_entry_date is not None and last_exit_date is not None:
                         result["output"] += f"  Last entry: {last_entry_date}, Last exit: {last_exit_date}\n"
                         if last_entry_date > last_exit_date:
@@ -326,6 +349,10 @@ def run_continuous_true_wfo(
 
                 result["output"] += f"  Signal for {trade_date.strftime('%Y-%m-%d')}: {signal}\n"
                 result["output"] += f"  Current position: {position}\n"
+
+                # Capture signal and trade date for window results
+                current_signal = signal
+                current_trade_date = trade_date.strftime('%Y-%m-%d')
 
                 # Get price for the trade date
                 try:
@@ -387,10 +414,12 @@ def run_continuous_true_wfo(
             "window": i + 1,
             "train_start": cfg['train_start'],
             "train_end": cfg['train_end'],
+            "test_date": current_trade_date,
             "next_day_trade": trade_date.strftime('%Y-%m-%d'),
             "best_param": ", ".join([f"{k}={v}" for k, v in best_params.items()]),
             "best_params": best_params,
             "train_metric": float(best_val),
+            "signal": current_signal,
             "portfolio_value": tracker.current_state.total_value if tracker.current_state else 0
         })
 

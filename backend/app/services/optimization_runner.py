@@ -588,6 +588,15 @@ def run_optimization(code: str, strategy_params: dict, config: dict):
                 param_names, combinations, metric_name, result, output_buffer
             )
 
+        elif mode == 'wfo':
+            # --- WFO HISTORICAL MODE (VectorBT Native) ---
+            result["output"] += "Running Walk-Forward Optimization (Historical - VectorBT Native)...\n"
+            from app.services.wfo_historical import run_wfo_historical
+            result = run_wfo_historical(
+                code, modified_code, strategy_params, config,
+                param_names, combinations, metric_name, result, output_buffer
+            )
+
     except Exception as e:
         result["output"] += f"Optimization Error: {str(e)}\n{traceback.format_exc()}"
 

@@ -324,6 +324,7 @@ def calculate_window_configs(
     n_windows: int,
     split_type: str,
     wfo_conf: Dict[str, Any],
+    is_true_wfo: bool = False,
 ) -> List[Dict[str, str]]:
     """
     Calculate window configurations for true WFO.
@@ -372,8 +373,12 @@ def calculate_window_configs(
         print(f"DEBUG: Using ratio – train_len={train_len}, test_len={test_len}, "
               f"total_days={total_days}")
 
-    # Step size - for short test periods, use 1 day step for more windows
-    if test_len <= 3:
+    # Step size - for True WFO, always use 1 day step since we trade one day at a time
+    # For short test periods, also use 1 day step for more windows
+    if is_true_wfo:
+        step = 1
+        print(f"DEBUG: True WFO mode - step=1 (trading one day at a time)")
+    elif test_len <= 3:
         step = 1
         print(f"DEBUG: Short test period mode - step=1")
     else:

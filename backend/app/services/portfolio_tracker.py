@@ -227,18 +227,24 @@ class PortfolioTracker:
             'total_trades': len(trades),
             'winning_trades': len(winning_trades),
             'losing_trades': len(losing_trades),
-            'win_rate': len(winning_trades) / len([t for t in trades if t.action == 'SELL']) if trades else 0,
+            'win_rate': len(winning_trades) / len([t for t in trades if t.action == 'SELL']) if trades and any(t.action == 'SELL' for t in trades) else 0,
             'avg_win': sum(realized_wins) / len(realized_wins) if realized_wins else 0,
             'avg_loss': sum(realized_losses) / len(realized_losses) if realized_losses else 0,
         }
 
     def get_trade_history(self) -> List[Dict]:
         """Get complete trade history as list of dicts."""
+        seen = set()  # Track unique trades by (timestamp, action) to avoid duplicates
         trades = []
         for state in self.states:
             for t in state.trade_history:
                 # Convert datetime to Unix timestamp for chart compatibility
                 ts = t.date.timestamp() if hasattr(t.date, 'timestamp') else pd.Timestamp(t.date).timestamp()
+                # Create unique key for deduplication
+                trade_key = (int(ts), t.action)
+                if trade_key in seen:
+                    continue
+                seen.add(trade_key)
                 trades.append({
                     'time': int(ts),
                     'date': t.date.isoformat(),

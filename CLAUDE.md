@@ -113,6 +113,24 @@ Frontend proxies `/api/*` to backend via Vite config. Use relative paths:
 const res = await fetch('/api/sectors')
 ```
 
+### True Walk-Forward Optimization (True WFO)
+
+**Purpose:** Simulates real trading conditions by optimizing on past data only, then trading just one day at a time.
+
+**How It Works:**
+1. For each rolling window: optimize parameters on training data (past N days)
+2. Pick the best parameters from that training window
+3. Generate signal from training window's last day → trade the NEXT day only
+4. Position persists across windows (like real trading)
+5. Repeat with window shifted forward by 1 day
+
+**Key Differences from Simple WFO:**
+- Tests one day at a time vs. multi-day test periods
+- Position state carries over between windows
+- No future data used in decision-making (avoids curve-fitting)
+
+**Implementation:** `backend/app/services/continuous_wfo.py` — uses `PortfolioTracker` to maintain position state across windows.
+
 ## Original Repositories
 
 This unified platform combines code from:
@@ -180,6 +198,28 @@ This unified platform combines code from:
 - Verify the file is actually being served (extreme test styles)
 - Fall back to inline styles for reliable spacing
 - This project's Tailwind v4 setup has quirks with spacing utilities in dev mode
+
+### True WFO Window Calculation Bug
+
+**Problem:** True WFO was generating only 1 window when using Ratio split method, resulting in no trades and a tiny date range (e.g., 2022-10-18 to 2022-10-20 instead of 2020-01-01 to 2024-01-01).
+
+**Root Cause:** `calculate_window_configs()` used `step = test_len` (438 days with 0.7 ratio) for all modes. With ratio=0.7, train=1022 days, only `(1461-1022)//438 = 1` window fits. True WFO should step 1 day at a time to trade each day.
+
+**Fix:** Added `is_true_wfo` parameter to `calculate_window_configs()` that forces `step=1`:
+```python
+# In continuous_wfo.py
+window_configs = calculate_window_configs(
+    start_date, end_date, n_windows,
+    wfo_conf.get("type", "rolling"), wfo_conf,
+    is_true_wfo=True  # Forces step=1
+)
+```
+
+**Files Modified:**
+- `backend/app/services/true_wfo_implementation.py` - Added `is_true_wfo` parameter
+- `backend/app/services/continuous_wfo.py` - Pass `is_true_wfo=True`
+
+**Lesson:** True WFO must always step 1 day at a time regardless of split method. The step calculation that works for standard WFO (step = test_len) breaks True WFO's continuous trading model.
 
 ### VectorBT Optimization Requires Special Comparison Syntax
 
