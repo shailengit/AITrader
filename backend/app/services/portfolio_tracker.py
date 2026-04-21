@@ -208,9 +208,16 @@ class PortfolioTracker:
         end_value = self.states[-1].total_value
         total_return = (end_value - start_value) / start_value
 
+        # Deduplicate trades - same object is recorded in multiple states
+        seen = set()
         trades = []
         for state in self.states:
-            trades.extend(state.trade_history)
+            for t in state.trade_history:
+                trade_key = (t.date.timestamp(), t.action, t.ticker)
+                if trade_key in seen:
+                    continue
+                seen.add(trade_key)
+                trades.append(t)
 
         winning_trades = [t for t in trades
                          if t.action == 'SELL' and t.realized_pnl and t.realized_pnl > 0]
@@ -220,6 +227,8 @@ class PortfolioTracker:
         realized_wins = [t.realized_pnl for t in winning_trades if t.realized_pnl]
         realized_losses = [t.realized_pnl for t in losing_trades if t.realized_pnl]
 
+        total_sells = len([t for t in trades if t.action == 'SELL'])
+
         return {
             'initial_value': start_value,
             'final_value': end_value,
@@ -227,7 +236,7 @@ class PortfolioTracker:
             'total_trades': len(trades),
             'winning_trades': len(winning_trades),
             'losing_trades': len(losing_trades),
-            'win_rate': len(winning_trades) / len([t for t in trades if t.action == 'SELL']) if trades and any(t.action == 'SELL' for t in trades) else 0,
+            'win_rate': len(winning_trades) / total_sells if total_sells > 0 else 0,
             'avg_win': sum(realized_wins) / len(realized_wins) if realized_wins else 0,
             'avg_loss': sum(realized_losses) / len(realized_losses) if realized_losses else 0,
         }
