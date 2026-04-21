@@ -213,7 +213,8 @@ class PortfolioTracker:
         trades = []
         for state in self.states:
             for t in state.trade_history:
-                trade_key = (t.date.timestamp(), t.action, t.ticker)
+                # Use int(timestamp) to match get_trade_history() deduplication
+                trade_key = (int(t.date.timestamp()), t.action, t.ticker)
                 if trade_key in seen:
                     continue
                 seen.add(trade_key)
